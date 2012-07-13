@@ -2,7 +2,9 @@
 (function() {
 
   (function($) {
-    return console.dir($);
+    return $.fn.reform = function() {
+      return console.log('reform: ' + $(this).attr('id'));
+    };
   })(jQuery);
 
 }).call(this);
