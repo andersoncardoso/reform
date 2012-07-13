@@ -1,0 +1,4 @@
+(
+    ($) ->
+      console.dir $
+)(jQuery)
