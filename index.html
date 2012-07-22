@@ -10,18 +10,12 @@
             <div class="my-form-wrapper"></div>
 
         </div>
-        <script type="text/javascript" charset="utf-8" src="lib/jquery.js"></script>
-        <script type="text/javascript" charset="utf-8" src="jquery.reform.js"></script>
+        <script type="text/javascript" src="lib/undercore-min.js"></script>
+        <script type="text/javascript" src="reForm.js"></script>
         <script type="text/javascript">
-            $('.my-form-wrapper').reform({
-                form: {
-                    action: 'yabadadoo',
-                    bla: 'blee'
-                },
-                name: {
-                    widget: 'InputField'
-                }
-            });
+            var my_form = new ReForm({});
+
+            my_form.render();
         </script>
     </body>
 </htm>
