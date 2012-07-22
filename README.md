@@ -1,22 +1,21 @@
+(Disclaimer: this is a initial draft to probably will change a lot on the
+near future. If you dont like hard emotions, dont use it yet)
+
 #ReForm.js
 
-This is small library to build and handle ajax forms directly for you,
-given a simple json configuration and small callbacks.
+This is small library to build and handle ajax forms.
 
-The idea behind this project is to leave bloated backend form rendering engines
-like django.forms and other similar engines that cross boundaries
-(control the rendering of you forms on the backend). We should leave what
+The idea behind this project is to leave bloated backend form rendering engines,
+like django.forms and other similar. These engines generally cross boundaries
+and control the rendering of you forms on the backend. We should leave what
 belongs to the front-end to the front-end.
 
 ##Dependecies:
 
 This project initially was a jQuery plugin, but I've decided to make more
-generic. It's only dependency now is underscore.js.
+generic. It only depends  of underscore.js (for now).
 
 ##Usage:
-
-(Disclaimer: this is a inital draft to probably will change a lot on the
-near future. If you dont like hard emotions, dont use yet)
 
 ```
 my_form = new ReForm({
