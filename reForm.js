@@ -2,6 +2,10 @@
   var ReForm, _json_extend;
 
   _json_extend = function(defaults, config) {
+    /*
+        This is ugly and fairly simple. But since underscore doesnt provide a
+        deepth object extend method we are impleting our own (again, fairly simple)
+    */
     var choices, k, v;
     choices = {};
     for (k in defaults) {
@@ -22,12 +26,21 @@
   ReForm = (function() {
 
     function ReForm(config) {
-      this.config = config;
-      console.log('reForm constructor');
-      console.dir(this.config);
+      this.defaults = {
+        form: {
+          method: 'POST',
+          action: '.'
+        }
+      };
+      this.choices = _json_extend(this.defaults, config);
+      console.dir(this.choices);
+      this.wrapper = document.getElementById(this.choices.wrapper);
     }
 
     ReForm.prototype.render = function() {
+      var form_template;
+      form_template = "<form action=\"" + this.choices.form.action + "\" method=\"" + this.choices.form.method + "\">\n    <!-- just place holding for now -->\n</form>";
+      this.wrapper.innerHTML = form_template;
       return console.log('render function');
     };
 
