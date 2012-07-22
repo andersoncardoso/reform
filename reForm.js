@@ -35,11 +35,27 @@
       this.choices = _json_extend(this.defaults, config);
       console.dir(this.choices);
       this.wrapper = document.getElementById(this.choices.wrapper);
+      this.fields = this.choices.fields;
     }
 
+    ReForm.prototype._common_widgets = {
+      'text': function(name) {
+        return "<input type=\"text\" class=\"\" id=\"id_" + name + "\" >";
+      }
+    };
+
     ReForm.prototype.render = function() {
-      var form_template;
-      form_template = "<form action=\"" + this.choices.form.action + "\" method=\"" + this.choices.form.method + "\">\n    <!-- just place holding for now -->\n</form>";
+      var f, fields_template, form_class, form_id, form_template, widget, _i, _len, _ref;
+      form_id = this.choices.form.id != null ? "id='" + this.choices.form.id + "'" : "";
+      form_class = this.choices.form["class"] != null ? "class='" + this.choices.form["class"] + "'" : "";
+      fields_template = "";
+      _ref = this.fields;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        f = _ref[_i];
+        widget = !typeof f.widget === 'string' ? f.widget() : this._common_widgets[f.widget](f.name);
+        fields_template += "<div class=\"reform-field\">\n    <label for=\"id_" + f.name + "\">" + (f.label || f.name) + "</label>\n    <div class=\"reform-field-input\">\n        " + widget + "\n    </div>\n</div>";
+      }
+      form_template = "<form action=\"" + this.choices.form.action + "\" method=\"" + this.choices.form.method + "\" " + form_id + " " + form_class + ">\n    " + fields_template + "\n</form>";
       this.wrapper.innerHTML = form_template;
       return console.log('render function');
     };

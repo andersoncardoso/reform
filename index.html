@@ -15,6 +15,11 @@
         <script type="text/javascript">
             var my_form = new ReForm({
                 wrapper: 'my-form-wrapper',
+                fields: [
+                    {
+                        name: 'title', widget: 'text'
+                    }
+                ]
             });
 
             my_form.render();
