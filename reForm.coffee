@@ -4,7 +4,7 @@
 _json_extend = (defaults, config) ->
     ###
     This is ugly and fairly simple. But since underscore doesnt provide a
-    deepth object extend method we are impleting our own (again, fairly simple)
+    deepth object extend method we are impleting our own (again, very simple)
     ###
     choices = {}
     for k, v of defaults
@@ -26,12 +26,22 @@ class ReForm
         console.dir @choices
 
         @wrapper = document.getElementById @choices.wrapper
+
+        ###
+        Field args:
+            name: [String] name of the field
+            widget: [String] name of a common widget  or
+                    [function] constructor for a widget
+            wrapper_class: [string] class for the div that wraps the field
+            input_class: [string] class for the input field
+
+        ###
         @fields = @choices.fields
 
     _common_widgets:
         'text': (name) ->
             """
-                <input type="text" class="" id="id_#{name}" >
+                <input type="text" class="" id="id_#{name}" iname="#{name}">
             """
 
     render: () ->
@@ -61,6 +71,6 @@ class ReForm
 
 window.ReForm = ReForm
 
-window.ReForm_TestNamespace ?= {}
-window.ReForm_TestNamespace._json_extend = _json_extend
+window.ReFormNS ?= {}
+window.ReFormNS._json_extend = _json_extend
 

@@ -4,7 +4,7 @@
   _json_extend = function(defaults, config) {
     /*
         This is ugly and fairly simple. But since underscore doesnt provide a
-        deepth object extend method we are impleting our own (again, fairly simple)
+        deepth object extend method we are impleting our own (again, very simple)
     */
     var choices, k, v;
     choices = {};
@@ -35,12 +35,20 @@
       this.choices = _json_extend(this.defaults, config);
       console.dir(this.choices);
       this.wrapper = document.getElementById(this.choices.wrapper);
+      /*
+              Field args:
+                  name: [String] name of the field
+                  widget: [String] name of a common widget  or
+                          [function] constructor for a widget
+                  wrapper_class: [string] class for the div that wraps the field
+                  input_class: [string] class for the input field
+      */
       this.fields = this.choices.fields;
     }
 
     ReForm.prototype._common_widgets = {
       'text': function(name) {
-        return "<input type=\"text\" class=\"\" id=\"id_" + name + "\" >";
+        return "<input type=\"text\" class=\"\" id=\"id_" + name + "\" iname=\"" + name + "\">";
       }
     };
 
@@ -66,8 +74,8 @@
 
   window.ReForm = ReForm;
 
-  if (window.ReForm_TestNamespace == null) window.ReForm_TestNamespace = {};
+  if (window.ReFormNS == null) window.ReFormNS = {};
 
-  window.ReForm_TestNamespace._json_extend = _json_extend;
+  window.ReFormNS._json_extend = _json_extend;
 
 }).call(this);

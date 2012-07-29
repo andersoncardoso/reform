@@ -1,6 +1,6 @@
 
 test("json_extend test", function(){
-    var json_extend = window.ReForm_TestNamespace._json_extend;
+    var json_extend = window.ReFormNS._json_extend;
     var choices, defaults, config;
 
     choices = json_extend({}, {});
