@@ -28,7 +28,9 @@ my_form = new ReForm({
     fields: [
         {field: 'name', widget: SomeConstructorForThisField()},
         {field: 'description': widget: SomeOtherWidget()}
-    ]
+    ],
+    onSuccess: function() {},
+    onError: function() {},
 });
 my_form.render();
 ```

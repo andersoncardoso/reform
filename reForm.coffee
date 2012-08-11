@@ -50,7 +50,7 @@ class ReForm
                         @_common_widgets[f.widget](f) else (new f.widget(f)).render()
 
             fields_template += """
-                <div class="#{f.wrapper_class or 'reform-field-wrapper'}">
+                <div class="reform-field-wrapper #{f.wrapper_class}">
                     <label for="id_#{f.name}">#{f.label or f.name}</label>
                     <div class="reform-field-input">
                         #{widget}
@@ -78,6 +78,10 @@ class ReForm
         @container.html form_template
 
         @form = @container.find 'form'
+        @form.submit (evt) =>
+            evt.preventDefault()
+            @submit()
+
 
     clean: () ->
         fields = @form.find ':input'
@@ -102,7 +106,57 @@ class ReForm
         data
 
     submit: () ->
-        #TODO ajax form submission
+        $.post(
+            @choices.form.action,
+            @toJSON(),
+            (data) =>
+                if data?.success
+                    #clean error messages
+                    (@form.find '.error-field').remove()
+                    (@form.find '.error').removeClass 'error'
+
+                    # on Success callback
+                    @choices.onSuccess?(data)
+
+                    if data.redirect
+                        window.location = data.redirect
+                    else if @choices.clean_after_save
+                        @clean()
+                else if data and not data.success
+                    #clean error messages
+                    (@form.find '.error-field').remove()
+                    (@form.find '.error').removeClass 'error'
+
+                    for key, val of data.errors
+
+                        if  key is "all"
+                            validation_div = $ '#validation-error'
+                            validation_div.remove() if validation_div.length
+
+                            @form.find('.reform-field-wrapper:last').before """
+                                <div id="validation-error" class="error-field">
+                                    #{val}
+                                </div>"""
+                        else
+                            node = @form.find "#id_#{key}"
+                            node = @form.find "input[name=#{key}]" if not node.length
+
+                            i = 0
+                            while not node.is(".reform-field-wrapper") and i < 5
+                                node = node.parent()
+                                i++
+
+                            node.append """
+                                <div class="error-field">
+                                    #{val}
+                                </div>"""
+                            node.parent().addClass 'error'
+
+                    # on Error callback
+                    @choices.onError?(data)
+            ,
+            'json'
+        ) #end of jquery xhr post request
 
 window.ReForm = ReForm
 
