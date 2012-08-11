@@ -18,6 +18,8 @@ class ReForm
                 action: '.'
                 id: ''
                 class: ''
+                submit_button: yes
+                submit_button_label: 'send'
         @choices = json_extend @defaults, config
         console.dir @choices
 
@@ -56,16 +58,49 @@ class ReForm
                 </div>
             """
 
+        submit = ''
+        if @choices.form.submit_button
+            submit = """
+            <div class="reform-field-wrapper">
+                <input type="submit" value="#{@choices.form.submit_button_label}">
+            </div>
+            """
         form_template = """
             <form action="#{@choices.form.action}"
                   method="#{@choices.form.method}"
                   id="#{@choices.form.id}"
                   class="#{@choices.form.class}">
                 #{fields_template}
+
+                #{submit}
             </form>
         """
         @container.html form_template
-        console.log 'render function'
+
+    clean: () ->
+        if @choices.form.id
+            fields = @container.find "##{@choices.form.id} :input"
+        else
+            fields = @container.find 'form :input'
+
+        fields.each () ->
+            type = this.type
+            tag = this.tagName.toLowerCase()
+
+            if type is 'text' or type is 'password' or tag is 'textarea'
+                jQuery(this).val ''
+            else if type is 'hidden'
+                jQuery(this).val ''
+            else if type is 'checkbox' or type is 'radio'
+                jQuery(this).attr 'checked', false
+            else if tag is 'select'
+                jQuery(this).val ''
+
+    toJson: () ->
+        #TODO returns a {field: value} for each form field
+
+    submit: () ->
+        #TODO ajax form submission
 
 window.ReForm = ReForm
 
