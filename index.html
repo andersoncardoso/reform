@@ -3,6 +3,15 @@
     <head>
         <meta  charset="utf-8" />
         <title>Reform Test</title>
+        <style type="text/css">
+            .gray {
+                background-color: #dedede;
+                padding: 20px;
+            }
+            .reform-field-wrapper {
+                padding: 20px;
+            }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -10,14 +19,51 @@
             <div id="my-form-wrapper"></div>
 
         </div>
-        <script type="text/javascript" src="lib/undercore-min.js"></script>
+        <script type="text/javascript" src="lib/jquery-1.8.0.min.js"></script>
         <script type="text/javascript" src="reForm.js"></script>
         <script type="text/javascript">
+
+            MyWidget = (function() {
+
+                function MyWidget(field) {
+                  this.field = field;
+                  console.log('mywidget constructor');
+                }
+
+                MyWidget.prototype.render = function() {
+                  var s;
+                  s = "<input type='text' class='hit-me'> value='click-me'";
+
+                  $(function() {
+                    return $('.hit-me').click(function() {
+                      return alert('HIT');
+                    });
+                  });
+
+                  return s;
+                };
+
+                return MyWidget;
+            })();
+
             var my_form = new ReForm({
-                wrapper: 'my-form-wrapper',
+                container_id: 'my-form-wrapper',
                 fields: [
                     {
-                        name: 'title', widget: 'text'
+                        name: 'title',
+                        widget: 'text',
+                        wrapper_class: 'gray',
+                        input_class: 'some-class'
+                    },
+                    {
+                        name: 'description',
+                        label: 'Description',
+                        widget: 'textarea',
+                        value: 'nonoonononononononon'
+                    },
+                    {
+                        name: 'custom field',
+                        widget: MyWidget
                     }
                 ]
             });

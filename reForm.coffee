@@ -1,20 +1,14 @@
 # reForm.coffee
 # This project is licensed under the MIT license terms
 
-_json_extend = (defaults, config) ->
-    ###
-    This is ugly and fairly simple. But since underscore doesnt provide a
-    deepth object extend method we are impleting our own (again, very simple)
-    ###
-    choices = {}
-    for k, v of defaults
-        choices[k] = v
-    for k, v of config
-        if typeof v is 'object' and defaults[k] and typeof defaults[k] is 'object'
-            choices[k] = _json_extend defaults[k], v
-        else
-            choices[k] = v
-    choices
+# Namespacing
+$ = jQuery
+
+json_extend = (defaults, config) ->
+    extended_json = {}
+    $.extend(true, extended_json, defaults, config)
+    extended_json
+
 
 class ReForm
     constructor: (config) ->
@@ -22,38 +16,39 @@ class ReForm
             form:
                 method: 'POST'
                 action: '.'
-        @choices = _json_extend(@defaults, config)
+                id: ''
+                class: ''
+        @choices = json_extend @defaults, config
         console.dir @choices
 
-        @wrapper = document.getElementById @choices.wrapper
+        @container = $ "##{@choices.container_id}"
 
-        ###
-        Field args:
-            name: [String] name of the field
-            widget: [String] name of a common widget  or
-                    [function] constructor for a widget
-            wrapper_class: [string] class for the div that wraps the field
-            input_class: [string] class for the input field
-
-        ###
         @fields = @choices.fields
 
+    ###
+    Set of constructors for some common HTML widgets
+    ###
     _common_widgets:
-        'text': (name) ->
+        'text': (field) ->
             """
-                <input type="text" class="" id="id_#{name}" iname="#{name}">
+            <input type="text" class="#{field.input_class}" id="id_#{field.name}" name="#{field.name}" value="#{field.value or ''}">
+            """
+        'textarea': (field) ->
+            """
+            <textarea class="#{field.input_class}" id="id_#{field.name}" name="#{field.name}">#{field.value or ''}</textarea>
             """
 
+    # render template to the DOM
     render: () ->
-        form_id =  if @choices.form.id? then "id='#{@choices.form.id}'" else ""
-        form_class = if @choices.form.class? then "class='#{@choices.form.class}'" else ""
-
 
         fields_template = ""
+
         for f in @fields
-            widget = if not typeof f.widget is 'string' then f.widget() else @_common_widgets[f.widget](f.name)
+            widget = if typeof f.widget is 'string' then \
+                        @_common_widgets[f.widget](f) else (new f.widget(f)).render()
+
             fields_template += """
-                <div class="reform-field">
+                <div class="#{f.wrapper_class or 'reform-field-wrapper'}">
                     <label for="id_#{f.name}">#{f.label or f.name}</label>
                     <div class="reform-field-input">
                         #{widget}
@@ -62,15 +57,18 @@ class ReForm
             """
 
         form_template = """
-            <form action="#{@choices.form.action}" method="#{@choices.form.method}" #{form_id} #{form_class}>
+            <form action="#{@choices.form.action}"
+                  method="#{@choices.form.method}"
+                  id="#{@choices.form.id}"
+                  class="#{@choices.form.class}">
                 #{fields_template}
             </form>
         """
-        @wrapper.innerHTML = form_template
+        @container.html form_template
         console.log 'render function'
 
 window.ReForm = ReForm
 
 window.ReFormNS ?= {}
-window.ReFormNS._json_extend = _json_extend
+window.ReFormNS.json_extend = json_extend
 
