@@ -56,16 +56,13 @@
         submit = "<div class=\"reform-field-wrapper\">\n    <input type=\"submit\" value=\"" + this.choices.form.submit_button_label + "\">\n</div>";
       }
       form_template = "<form action=\"" + this.choices.form.action + "\"\n      method=\"" + this.choices.form.method + "\"\n      id=\"" + this.choices.form.id + "\"\n      class=\"" + this.choices.form["class"] + "\">\n    " + fields_template + "\n\n    " + submit + "\n</form>";
-      return this.container.html(form_template);
+      this.container.html(form_template);
+      return this.form = this.container.find('form');
     };
 
     ReForm.prototype.clean = function() {
       var fields;
-      if (this.choices.form.id) {
-        fields = this.container.find("#" + this.choices.form.id + " :input");
-      } else {
-        fields = this.container.find('form :input');
-      }
+      fields = this.form.find(':input');
       return fields.each(function() {
         var tag, type;
         type = this.type;
@@ -82,7 +79,16 @@
       });
     };
 
-    ReForm.prototype.toJson = function() {};
+    ReForm.prototype.toJSON = function() {
+      var data, obj, _i, _len, _ref;
+      data = {};
+      _ref = this.form.serializeArray();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        obj = _ref[_i];
+        data[obj.name] = obj.value;
+      }
+      return data;
+    };
 
     ReForm.prototype.submit = function() {};
 

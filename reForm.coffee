@@ -77,11 +77,10 @@ class ReForm
         """
         @container.html form_template
 
+        @form = @container.find 'form'
+
     clean: () ->
-        if @choices.form.id
-            fields = @container.find "##{@choices.form.id} :input"
-        else
-            fields = @container.find 'form :input'
+        fields = @form.find ':input'
 
         fields.each () ->
             type = this.type
@@ -96,8 +95,11 @@ class ReForm
             else if tag is 'select'
                 jQuery(this).val ''
 
-    toJson: () ->
-        #TODO returns a {field: value} for each form field
+    toJSON: () ->
+        data = {}
+        for obj in @form.serializeArray()
+            data[obj.name] = obj.value
+        data
 
     submit: () ->
         #TODO ajax form submission
