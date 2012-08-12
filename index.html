@@ -25,28 +25,29 @@
 
             MyWidget = (function() {
 
-                function MyWidget(field) {
-                  this.field = field;
+                function MyWidget(options) {
+                  this.options = options;
                   console.log('mywidget constructor');
                 }
 
                 MyWidget.prototype.render = function() {
-                  var s;
-                  s = "<input type='text' class='hit-me' value='click-me'>";
+                  var html;
+                  html = "<input type='text' class='hit-me' value='click-me'>";
+                  var _ref = this;
 
                   $(function() {
                     return $('.hit-me').click(function() {
-                      return alert('HIT');
+                      return alert(_ref.options.msg);
                     });
                   });
 
-                  return s;
+                  return html;
                 };
 
                 return MyWidget;
             })();
 
-            var my_form = new ReForm({
+            var my_form = new reForm.Form({
                 container_id: 'my-form-wrapper',
                 form: {
                     action: 'backend.json'
@@ -54,19 +55,20 @@
                 fields: [
                     {
                         name: 'title',
-                        widget: 'text',
+                        widget: reForm.CommonWidgets.TextWidget,
+                        widget_args: {input_class: 'blaa'},
                         wrapper_class: 'gray',
-                        input_class: 'some-class'
                     },
                     {
                         name: 'description',
                         label: 'Description',
-                        widget: 'textarea',
-                        value: 'nonoonononononononon'
+                        widget: reForm.CommonWidgets.TextareaWidget,
+                        widget_args: {value: 'nonoonononononononon'}
                     },
                     {
                         name: 'custom field',
-                        widget: MyWidget
+                        widget: MyWidget,
+                        widget_args: {msg: 'yabadabadoo!'}
                     }
                 ]
             });

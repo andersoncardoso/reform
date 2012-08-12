@@ -1,5 +1,7 @@
 (function() {
-  var $, ReForm, json_extend;
+  var $, CommonWidgets, ReForm, ReformWidget, TextWidget, TextareaWidget, json_extend,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   $ = jQuery;
 
@@ -9,6 +11,61 @@
     $.extend(true, extended_json, defaults, config);
     return extended_json;
   };
+
+  /*
+  # =================  Widgets ================
+  */
+
+  ReformWidget = (function() {
+
+    function ReformWidget(config) {
+      this.opt = config;
+    }
+
+    return ReformWidget;
+
+  })();
+
+  TextWidget = (function(_super) {
+
+    __extends(TextWidget, _super);
+
+    function TextWidget() {
+      TextWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    TextWidget.prototype.render = function() {
+      return "<input type=\"text\" class=\"" + this.opt.input_class + "\" id=\"id_" + this.opt.name + "\" name=\"" + this.opt.name + "\" value=\"" + this.opt.value + "\">";
+    };
+
+    return TextWidget;
+
+  })(ReformWidget);
+
+  TextareaWidget = (function(_super) {
+
+    __extends(TextareaWidget, _super);
+
+    function TextareaWidget() {
+      TextareaWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    TextareaWidget.prototype.render = function() {
+      return "<textarea class=\"" + this.opt.input_class + "\" id=\"id_" + this.opt.name + "\" name=\"" + this.opt.name + "\">" + this.opt.value + "</textarea>";
+    };
+
+    return TextareaWidget;
+
+  })(ReformWidget);
+
+  CommonWidgets = {
+    TextWidget: TextWidget,
+    TextareaWidget: TextareaWidget
+  };
+
+  /*
+  # ================= Reform ==================
+  */
 
   ReForm = (function() {
 
@@ -29,27 +86,19 @@
       this.fields = this.choices.fields;
     }
 
-    /*
-        Set of constructors for some common HTML widgets
-    */
-
-    ReForm.prototype._common_widgets = {
-      'text': function(field) {
-        return "<input type=\"text\" class=\"" + field.input_class + "\" id=\"id_" + field.name + "\" name=\"" + field.name + "\" value=\"" + (field.value || '') + "\">";
-      },
-      'textarea': function(field) {
-        return "<textarea class=\"" + field.input_class + "\" id=\"id_" + field.name + "\" name=\"" + field.name + "\">" + (field.value || '') + "</textarea>";
-      }
-    };
-
     ReForm.prototype.render = function() {
-      var f, fields_template, form_template, submit, widget, _i, _len, _ref,
+      var args, f, fields_template, form_template, submit, widget, _i, _len, _ref,
         _this = this;
       fields_template = "";
       _ref = this.fields;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         f = _ref[_i];
-        widget = typeof f.widget === 'string' ? this._common_widgets[f.widget](f) : (new f.widget(f)).render();
+        args = json_extend({
+          name: f.name,
+          input_class: 'reform-input',
+          value: ''
+        }, f.widget_args);
+        widget = (new f.widget(args)).render();
         fields_template += "<div class=\"reform-field-wrapper " + f.wrapper_class + "\">\n    <label for=\"id_" + f.name + "\">" + (f.label || f.name) + "</label>\n    <div class=\"reform-field-input\">\n        " + widget + "\n    </div>\n</div>";
       }
       submit = '';
@@ -141,10 +190,12 @@
 
   })();
 
-  window.ReForm = ReForm;
+  window.reForm = {};
 
-  if (window.ReFormNS == null) window.ReFormNS = {};
+  window.reForm.Form = ReForm;
 
-  window.ReFormNS.json_extend = json_extend;
+  window.reForm.CommonWidgets = CommonWidgets;
+
+  window.reForm.json_extend = json_extend;
 
 }).call(this);

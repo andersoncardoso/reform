@@ -10,6 +10,33 @@ json_extend = (defaults, config) ->
     extended_json
 
 
+###
+# =================  Widgets ================
+###
+class ReformWidget
+    constructor: (config) ->
+        @opt = config
+
+
+class TextWidget extends ReformWidget
+    render: () ->
+        """
+        <input type="text" class="#{@opt.input_class}" id="id_#{@opt.name}" name="#{@opt.name}" value="#{@opt.value}">
+        """
+
+class TextareaWidget extends ReformWidget
+    render: () ->
+        """
+        <textarea class="#{@opt.input_class}" id="id_#{@opt.name}" name="#{@opt.name}">#{@opt.value}</textarea>
+        """
+
+CommonWidgets = 
+    TextWidget: TextWidget
+    TextareaWidget: TextareaWidget
+
+###
+# ================= Reform ==================
+###
 class ReForm
     constructor: (config) ->
         @defaults =
@@ -27,18 +54,6 @@ class ReForm
 
         @fields = @choices.fields
 
-    ###
-    Set of constructors for some common HTML widgets
-    ###
-    _common_widgets:
-        'text': (field) ->
-            """
-            <input type="text" class="#{field.input_class}" id="id_#{field.name}" name="#{field.name}" value="#{field.value or ''}">
-            """
-        'textarea': (field) ->
-            """
-            <textarea class="#{field.input_class}" id="id_#{field.name}" name="#{field.name}">#{field.value or ''}</textarea>
-            """
 
     # render template to the DOM
     render: () ->
@@ -46,8 +61,16 @@ class ReForm
         fields_template = ""
 
         for f in @fields
-            widget = if typeof f.widget is 'string' then \
-                        @_common_widgets[f.widget](f) else (new f.widget(f)).render()
+            args = json_extend(
+                {
+                    name: f.name,
+                    input_class: 'reform-input',
+                    value: ''
+                },
+                f.widget_args
+            )
+
+            widget = (new f.widget args).render()
 
             fields_template += """
                 <div class="reform-field-wrapper #{f.wrapper_class}">
@@ -158,8 +181,10 @@ class ReForm
             'json'
         ) #end of jquery xhr post request
 
-window.ReForm = ReForm
+window.reForm = {}
+window.reForm.Form = ReForm
+window.reForm.CommonWidgets = CommonWidgets
 
-window.ReFormNS ?= {}
-window.ReFormNS.json_extend = json_extend
+# This is only for testing
+window.reForm.json_extend = json_extend
 
