@@ -13,24 +13,25 @@ json_extend = (defaults, config) ->
 ###
 # =================  Widgets ================
 ###
-class ReformWidget
+class ReFormWidget
     constructor: (config) ->
         @opt = config
 
 
-class TextWidget extends ReformWidget
+class TextWidget extends ReFormWidget
     render: () ->
         """
         <input type="text" class="#{@opt.input_class}" id="id_#{@opt.name}" name="#{@opt.name}" value="#{@opt.value}">
         """
 
-class TextareaWidget extends ReformWidget
+class TextareaWidget extends ReFormWidget
     render: () ->
         """
         <textarea class="#{@opt.input_class}" id="id_#{@opt.name}" name="#{@opt.name}">#{@opt.value}</textarea>
         """
 
-CommonWidgets = 
+CommonWidgets =
+    ReFormWidget: ReFormWidget
     TextWidget: TextWidget
     TextareaWidget: TextareaWidget
 

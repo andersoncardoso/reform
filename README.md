@@ -26,7 +26,8 @@ my_form = new reForm.Form({
         action: 'my_backend_action', // (default: '.')
         method: 'POST',  // (default: 'POST')
         id: 'my_form_id',
-        class: 'some css classes'
+        class: 'some css classes',
+        submit_button: true  //checks if the form should have a submit button (default: true)
     },
     fields: [
         {field: 'name', widget: SomeWidgetClass, widget_args:{ ...} },
@@ -117,6 +118,14 @@ var my_form = new reForm.Form({
 
 ```
 
+if you are using coffeescript you can do:
+```
+MyAwesomeWidget extends reForm.CommonWidgets.ReFormWidget
+    render: () ->
+        # build my awesome widget using the @opt object to access the options
+        return my_rendered_html
+```
+
 ###Ajax and Backend:
 
 All form submission is made via ajax.
@@ -143,7 +152,18 @@ examples:
     {'success': false, errors:[{'all': 'some validation message'},{'title': 'You must prove a Title'}]}
     your form will call the onError callback, show the error messages and add the .error classes to each field with a error message.
 
+###Utilities:
 
+given: myform = new MyForm({...});
+
+- myform.clean()
+  clean all the form fields
+
+- myform.toJSON()
+  returns a JSON object with field name and corresponding value
+
+- myform.submit()
+  triggers the form ajax submission
 
 ###Copyright (copyleft):
 created by Anderson Pierre Cardoso(2012) and licensed under the terms of the MIT license.

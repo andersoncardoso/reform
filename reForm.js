@@ -1,5 +1,5 @@
 (function() {
-  var $, CommonWidgets, ReForm, ReformWidget, TextWidget, TextareaWidget, json_extend,
+  var $, CommonWidgets, ReForm, ReFormWidget, TextWidget, TextareaWidget, json_extend,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -16,13 +16,13 @@
   # =================  Widgets ================
   */
 
-  ReformWidget = (function() {
+  ReFormWidget = (function() {
 
-    function ReformWidget(config) {
+    function ReFormWidget(config) {
       this.opt = config;
     }
 
-    return ReformWidget;
+    return ReFormWidget;
 
   })();
 
@@ -40,7 +40,7 @@
 
     return TextWidget;
 
-  })(ReformWidget);
+  })(ReFormWidget);
 
   TextareaWidget = (function(_super) {
 
@@ -56,9 +56,10 @@
 
     return TextareaWidget;
 
-  })(ReformWidget);
+  })(ReFormWidget);
 
   CommonWidgets = {
+    ReFormWidget: ReFormWidget,
     TextWidget: TextWidget,
     TextareaWidget: TextareaWidget
   };
