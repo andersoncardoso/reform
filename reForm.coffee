@@ -48,6 +48,7 @@ class ReForm
                 class: ''
                 submit_button: yes
                 submit_button_label: 'send'
+            clean_after_save: true
         @choices = json_extend @defaults, config
         console.dir @choices
 

@@ -79,7 +79,8 @@
           "class": '',
           submit_button: true,
           submit_button_label: 'send'
-        }
+        },
+        clean_after_save: true
       };
       this.choices = json_extend(this.defaults, config);
       console.dir(this.choices);
