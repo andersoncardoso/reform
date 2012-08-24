@@ -41,6 +41,7 @@ CommonWidgets =
 class ReForm
     constructor: (config) ->
         @defaults =
+            context: document
             form:
                 method: 'POST'
                 action: '.'
@@ -50,15 +51,17 @@ class ReForm
                 submit_button_label: 'send'
             clean_after_save: true
         @choices = json_extend @defaults, config
-        console.dir @choices
 
-        @container = $ "##{@choices.container_id}"
+        @container = $(@choices.context).find("##{@choices.container_id}")
 
         @fields = @choices.fields
 
 
     # render template to the DOM
     render: () ->
+
+        if not @container.length
+            @container = $(@choices.context).find("##{@choices.container_id}")
 
         fields_template = ""
 
@@ -141,9 +144,9 @@ class ReForm
                     (@form.find '.error').removeClass 'error'
 
                     # on Success callback
-                    @choices.onSuccess?(data)
+                    bubbleUp = @choices.onSuccess(data) ? true
 
-                    if data.redirect
+                    if data.redirect and bubbleUp
                         window.location = data.redirect
                     else if @choices.clean_after_save
                         @clean()

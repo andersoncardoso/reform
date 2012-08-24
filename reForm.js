@@ -72,6 +72,7 @@
 
     function ReForm(config) {
       this.defaults = {
+        context: document,
         form: {
           method: 'POST',
           action: '.',
@@ -83,14 +84,16 @@
         clean_after_save: true
       };
       this.choices = json_extend(this.defaults, config);
-      console.dir(this.choices);
-      this.container = $("#" + this.choices.container_id);
+      this.container = $(this.choices.context).find("#" + this.choices.container_id);
       this.fields = this.choices.fields;
     }
 
     ReForm.prototype.render = function() {
       var args, f, fields_template, form_template, submit, widget, _i, _len, _ref,
         _this = this;
+      if (!this.container.length) {
+        this.container = $(this.choices.context).find("#" + this.choices.container_id);
+      }
       fields_template = "";
       _ref = this.fields;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -149,14 +152,12 @@
     ReForm.prototype.submit = function() {
       var _this = this;
       return $.post(this.choices.form.action, this.toJSON(), function(data) {
-        var i, key, node, val, validation_div, _base, _base2, _ref;
+        var bubbleUp, i, key, node, val, validation_div, _base, _ref, _ref2;
         if (data != null ? data.success : void 0) {
           (_this.form.find('.error-field')).remove();
           (_this.form.find('.error')).removeClass('error');
-          if (typeof (_base = _this.choices).onSuccess === "function") {
-            _base.onSuccess(data);
-          }
-          if (data.redirect) {
+          bubbleUp = (_ref = _this.choices.onSuccess(data)) != null ? _ref : true;
+          if (data.redirect && bubbleUp) {
             return window.location = data.redirect;
           } else if (_this.choices.clean_after_save) {
             return _this.clean();
@@ -164,9 +165,9 @@
         } else if (data && !data.success) {
           (_this.form.find('.error-field')).remove();
           (_this.form.find('.error')).removeClass('error');
-          _ref = data.errors;
-          for (key in _ref) {
-            val = _ref[key];
+          _ref2 = data.errors;
+          for (key in _ref2) {
+            val = _ref2[key];
             if (key === "all") {
               validation_div = $('#validation-error');
               if (validation_div.length) validation_div.remove();
@@ -183,7 +184,7 @@
               node.parent().addClass('error');
             }
           }
-          return typeof (_base2 = _this.choices).onError === "function" ? _base2.onError(data) : void 0;
+          return typeof (_base = _this.choices).onError === "function" ? _base.onError(data) : void 0;
         }
       }, 'json');
     };
