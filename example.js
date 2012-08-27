@@ -1,5 +1,5 @@
 (function() {
-  var AnnoyingWidget, FormView;
+  var AnnoyingWidget, DummyModel, FormView;
 
   AnnoyingWidget = ReForm.Widget.extend({
     template: "<input class=\"annoying\" type=\"text\" name=\"<%=name%>\" id=id_\"<%=name%>\" value=\"<%=value%>\">",
@@ -43,10 +43,17 @@
     }
   });
 
+  DummyModel = Backbone.Model.extend({
+    url: '/model'
+  });
+
   $(function() {
     var myForm;
     myForm = new FormView({
-      formId: 'some_id'
+      formId: 'some_id',
+      model: new DummyModel({
+        a: 'bb'
+      })
     });
     $('#my-form-wrapper').html(myForm.render().el);
     return window.form = myForm;

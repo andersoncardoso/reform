@@ -56,14 +56,12 @@ TextAreaWidget = BaseWidget.extend
 
 
 BaseFormView = Backbone.View.extend
-    events:
-        'submit': 'save'
-
     initialize: () ->
         _.bindAll this
         @formTemplate = _.template formTemplate
         if @options?.model
             @model = @options.model
+        @on 'submit', @save
 
     render: () ->
         id = @options?.formId or ''
@@ -111,6 +109,7 @@ BaseFormView = Backbone.View.extend
                 @trigger 'success', resp
 
             error: (model, resp) =>
+                console.log resp
                 resp = JSON.parse(resp.responseText)
                 @errors(resp.errors or {})
                 @trigger 'error', resp

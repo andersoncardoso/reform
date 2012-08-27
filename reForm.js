@@ -43,16 +43,14 @@
   });
 
   BaseFormView = Backbone.View.extend({
-    events: {
-      'submit': 'save'
-    },
     initialize: function() {
       var _ref;
       _.bindAll(this);
       this.formTemplate = _.template(formTemplate);
       if ((_ref = this.options) != null ? _ref.model : void 0) {
-        return this.model = this.options.model;
+        this.model = this.options.model;
       }
+      return this.on('submit', this.save);
     },
     render: function() {
       var args, field, id, renderedField, renderedFormTemplate, widget, _fieldTemplate, _i, _len, _ref, _ref2,
@@ -94,6 +92,7 @@
           return _this.trigger('success', resp);
         },
         error: function(model, resp) {
+          console.log(resp);
           resp = JSON.parse(resp.responseText);
           _this.errors(resp.errors || {});
           return _this.trigger('error', resp);
