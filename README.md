@@ -3,167 +3,95 @@ If you decide to use it be cautious, and be patient)
 
 #ReForm.js
 
-This is small javascript library to build and handle forms.
-
-My motivation for building this is due my distaste for using backend form-building engines (like django.forms and many other).
-I prefer leaving what belongs to the front-end to the fron-end. I'm also like
-to have easily instantiable forms.
-
-This library aims to do only two things:
-- render your form
-- manage them via ajax (do backend validation and so)
-
-##Dependecies:
-
-For now this project depends on jQuery, but making it more generic it's on the whish list.
+This is a small library to work with forms on javascript.
+It uses (and aims to be used with) backbone.js.
 
 ##Usage:
 
+see the usage bellow:
 ```
-my_form = new reForm.Form({
-    container_id: 'some_id',
-    form: {
-        action: 'my_backend_action', // (default: '.')
-        method: 'POST',  // (default: 'POST')
-        id: 'my_form_id',
-        class: 'some css classes',
-        submit_button: true  //checks if the form should have a submit button (default: true)
-    },
+
+FormView = ReForm.Form.extend
     fields: [
-        {field: 'name', widget: SomeWidgetClass, widget_args:{ ...} },
-        {field: 'desc', label: 'Description', widget: SomeOtherWidget}
-    ],
-    onSuccess: function() {},
-    onError: function() {},
-    clean_after_save: true,  // says if the forms should be cleaned after the save (default: true)
-});
-my_form.render();
-```
-With this, your form will be rendered inside the 'some_id' html element (probably a div).
-And your form submission will be handled via ajax.
-
-Your form has a onSuccess and onError callbacks for when he receives the ajax return from the backend.
-
-###Field args:
-
-- name: [String]
-    name of the field
-    (required)
-- widget: [class]
-    A widget Class object
-    (required)
-- widget_args: [object]
-    options for the widget constructor
-    (optional, all widget already receive a obj with default values)
-- wrapper_class: [string]
-    class for the div that wraps the field
-    (optional, all fields has a default class 'reform-field-wrapper')
-- label: [String]
-    the label for the form field
-    (optional, if you dont pass it will use the name as label)
-
-###Widgets:
-
-A widget must be a Class (instantiable via 'new') that contains a render method.
-
-There are several common widgets in the reForm.CommonWidgets object.
-
-see bellow an example of creating a custom widget:
-
-```
-
-var MyWidget = (function() {
-
-    function MyWidget(options) {
-      this.options = options;
-      console.log('MyWidget constructor');
-    }
-
-    MyWidget.prototype.render = function() {
-      var html;
-      html = "<input type='text' class='hit-me' value='click-me'>";
-      var _ref = this;
-
-      $(function() {
-        return $('.hit-me').click(function() {
-          return alert(_ref.options.msg);
-        });
-      });
-
-      return html;
-    };
-
-    return MyWidget;
-})();
-
-var my_form = new reForm.Form({
-    container_id: 'my-form-wrapper',
-    form: {
-        action: '/my/url/'
-    },
-    fields: [
-        {
-            name: 'title',
-            widget: reForm.CommonWidgets.TextWidget,
-            widget_args: {input_class: 'some-class', value: 'initial value'},
-        },
-        {
-            name: 'custom field',
-            widget: MyWidget,
-            widget_args: {msg: 'Hooray!'}
-        }
+        {name: 'title', widget: ReForm.commonWidgets.TextWidget, label: 'Todo:'}
+        {name: 'desc', widget: ReForm.commonWidgets.TextAreaWidget, label: 'Description:'}
     ]
-});
+    initialize: () ->
+        ReForm.Form.prototype.initialize.apply this, @options
+        @bind 'success', @onSuccess
+
+    onSuccess: (data) ->
+        console.dir data
+
+$ () ->
+    form = new FormView
+        formId: 'some_id'
+        model: new MyModel()
+
+    $('#my-form-wrapper').html myForm.render().el
 
 
 ```
 
-if you are using coffeescript you can do:
+on the constructor it accepts a model (Backbone.Model), if the model is prepoluated, the form renders with the model data already loaded.
+
+##Methods:
+
+*events:
+
+submit, success, error
+
+*form.save()
+
+saves the data (uses model.save), This method is automatically called when you raise a 'submit' event. It raises a 'success' or 'error' event.
+To trigger the sucess the model.save should return a Http 200. To trigger a 'error' should return another Http status code (usually 400 Bad Request, for validation)
+
+
+*form.set({title: 'some title', desc:'nonononoono'})
+
+*form.get()
+
+*form.get('title')
+
+*form.errors()
+
+*form.errors({title: 'Validations Msg'})
+
+*form.cleanErrors()
+
+*form.fields
+
+the form fields, after render, have a 'instance' attribute so you play with the widget directly
+
+##Widgets
+
 ```
-MyAwesomeWidget extends reForm.CommonWidgets.ReFormWidget
-    render: () ->
-        # build my awesome widget using the @opt object to access the options
-        return my_rendered_html
+AnnoyingWidget = ReForm.Widget.extend
+    template: """
+    <input class="annoying" type="text" name="<%=name%>" id=id_"<%=name%>" value="<%=value%>">
+    """
+    behavior: ()->
+        @$el.find('.annoying').click (evt) =>
+            alert 'heey, stop it!!!'
+            $(evt.target).blur()
+
 ```
+You could have provided a template from the DOM
+example:
+```
+On my HTMl:
+<script type="text/template" id="my-widget">
+    ... my widget html here!
+</script>
+AnnoyingWidget = ReForm.Widget.extend
+    template: $('#my-widget').html()
+    behavior: ()->
+       .... my widget custom js here (optional)
+```
+you can (and several times, must) also provide a .set(value) and .get() function, that know how to set and get values for this widget.
+The default is getting from the 'input' field the .val() attribute.
+If your widget is more elaborate please provide these methods
 
-###Ajax and Backend:
-
-All form submission is made via ajax.
-you backend must return a json object with:
-
-- success: [boolean]
-    True or False, if the form saved successfuly
-- errors: [array]
-    if success is false, you must return an errors array containing objects with field name and a message.
-    example: [{'title': 'This field is required!'}]
-    the messages will be displayed in the form bellow the corresponding fields.
-    if you provide a message with de field name as 'all' with will show a message bellow the form, not attached to any field.
-- redirect: [string]
-    if success is true. If you provide this with a url, after saving the object, the page will be redirected to this url.
-
-examples:
-
-    {'success': true, redirect: '/some/url/'}
-    you form will execute the onSuccess function and then redirect to /some/url/
-
-    {'success': true}
-    your form will execute hte onSuccess callback and stay on your page and clean itself (except if you provided the clean_after_save: false flag to the form constructor object)
-
-    {'success': false, errors:[{'all': 'some validation message'},{'title': 'You must prove a Title'}]}
-    your form will call the onError callback, show the error messages and add the .error classes to each field with a error message.
-
-###Utilities:
-
-given: myform = new MyForm({...});
-
-- myform.clean()
-  clean all the form fields
-
-- myform.toJSON()
-  returns a JSON object with field name and corresponding value
-
-- myform.submit()
-  triggers the form ajax submission
 
 ###Copyright (copyleft):
 created by Anderson Pierre Cardoso(2012) and licensed under the terms of the MIT license.

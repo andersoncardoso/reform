@@ -1,204 +1,167 @@
 (function() {
-  var $, CommonWidgets, ReForm, ReFormWidget, TextWidget, TextareaWidget, json_extend,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+  var BaseFormView, BaseWidget, TextAreaWidget, TextWidget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
 
-  $ = jQuery;
+  formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"send\" />\n    </div>\n</form>";
 
-  json_extend = function(defaults, config) {
-    var extended_json;
-    extended_json = {};
-    $.extend(true, extended_json, defaults, config);
-    return extended_json;
-  };
+  fieldTemplate = "<div class=\"field-container\" for=\"<%=name%>\">\n    <label><%=label%></label>\n    <div class=\"widget-container\">\n    </div>\n</div>";
 
-  /*
-  # =================  Widgets ================
-  */
+  textTemplate = "<input type=\"text\" name=\"<%=name%>\" value=\"<%=value%>\" id=\"id_<%=name%>\" />";
 
-  ReFormWidget = (function() {
+  textareaTemplate = "<textarea name=\"<%=name%>\" id=\"id_<%=name%>\"><%=value%></textarea>";
 
-    function ReFormWidget(config) {
-      this.opt = config;
+  BaseWidget = Backbone.View.extend({
+    initialize: function() {
+      _.bindAll(this);
+      this._template = _.template(this.template);
+      return this.name = this.options.name;
+    },
+    render: function() {
+      this.$el.html(this._template(this.options));
+      if (typeof this.behavior === "function") this.behavior();
+      return this;
+    },
+    set: function(value) {
+      return this.$el.find("input[name=" + this.name + "]").val(value);
+    },
+    get: function() {
+      return this.$el.find("input[name=" + this.name + "]").val();
     }
+  });
 
-    return ReFormWidget;
+  TextWidget = BaseWidget.extend({
+    template: textTemplate
+  });
 
-  })();
-
-  TextWidget = (function(_super) {
-
-    __extends(TextWidget, _super);
-
-    function TextWidget() {
-      TextWidget.__super__.constructor.apply(this, arguments);
+  TextAreaWidget = BaseWidget.extend({
+    template: textareaTemplate,
+    set: function(value) {
+      return this.$el.find("textarea").val(value);
+    },
+    get: function() {
+      return this.$el.find("textarea").val();
     }
+  });
 
-    TextWidget.prototype.render = function() {
-      return "<input type=\"text\" class=\"" + this.opt.input_class + "\" id=\"id_" + this.opt.name + "\" name=\"" + this.opt.name + "\" value=\"" + this.opt.value + "\">";
-    };
-
-    return TextWidget;
-
-  })(ReFormWidget);
-
-  TextareaWidget = (function(_super) {
-
-    __extends(TextareaWidget, _super);
-
-    function TextareaWidget() {
-      TextareaWidget.__super__.constructor.apply(this, arguments);
-    }
-
-    TextareaWidget.prototype.render = function() {
-      return "<textarea class=\"" + this.opt.input_class + "\" id=\"id_" + this.opt.name + "\" name=\"" + this.opt.name + "\">" + this.opt.value + "</textarea>";
-    };
-
-    return TextareaWidget;
-
-  })(ReFormWidget);
-
-  CommonWidgets = {
-    ReFormWidget: ReFormWidget,
-    TextWidget: TextWidget,
-    TextareaWidget: TextareaWidget
-  };
-
-  /*
-  # ================= Reform ==================
-  */
-
-  ReForm = (function() {
-
-    function ReForm(config) {
-      this.defaults = {
-        context: document,
-        form: {
-          method: 'POST',
-          action: '.',
-          id: '',
-          "class": '',
-          submit_button: true,
-          submit_button_label: 'send'
-        },
-        clean_after_save: true
-      };
-      this.choices = json_extend(this.defaults, config);
-      this.container = $(this.choices.context).find("#" + this.choices.container_id);
-      this.fields = this.choices.fields;
-    }
-
-    ReForm.prototype.render = function() {
-      var args, f, fields_template, form_template, submit, widget, _i, _len, _ref,
+  BaseFormView = Backbone.View.extend({
+    events: {
+      'submit': 'save'
+    },
+    initialize: function() {
+      var _ref;
+      _.bindAll(this);
+      this.formTemplate = _.template(formTemplate);
+      if ((_ref = this.options) != null ? _ref.model : void 0) {
+        return this.model = this.options.model;
+      }
+    },
+    render: function() {
+      var args, field, id, renderedField, renderedFormTemplate, widget, _fieldTemplate, _i, _len, _ref, _ref2,
         _this = this;
-      if (!this.container.length) {
-        this.container = $(this.choices.context).find("#" + this.choices.container_id);
+      id = ((_ref = this.options) != null ? _ref.formId : void 0) || '';
+      renderedFormTemplate = this.formTemplate({
+        formId: id
+      });
+      this.$el.html(renderedFormTemplate);
+      _ref2 = this.fields.slice(0).reverse();
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        field = _ref2[_i];
+        args = {
+          name: field.name,
+          id: "id_" + field.name,
+          label: field.label || field.name,
+          value: field.value || ''
+        };
+        args = _.extend(args, field.args || {});
+        widget = new field.widget(args);
+        field.instance = widget;
+        _fieldTemplate = _.template(fieldTemplate);
+        renderedField = $(_fieldTemplate(args));
+        renderedField.find('.widget-container').html(widget.render().el);
+        this.$el.find('form').prepend(renderedField);
+        if (this.model) this.set(this.model.toJSON());
       }
-      fields_template = "";
-      _ref = this.fields;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
-        args = json_extend({
-          name: f.name,
-          input_class: 'reform-input',
-          value: ''
-        }, f.widget_args);
-        widget = (new f.widget(args)).render();
-        fields_template += "<div class=\"reform-field-wrapper " + f.wrapper_class + "\">\n    <label for=\"id_" + f.name + "\">" + (f.label || f.name) + "</label>\n    <div class=\"reform-field-input\">\n        " + widget + "\n    </div>\n</div>";
-      }
-      submit = '';
-      if (this.choices.form.submit_button) {
-        submit = "<div class=\"reform-field-wrapper\">\n    <input type=\"submit\" value=\"" + this.choices.form.submit_button_label + "\">\n</div>";
-      }
-      form_template = "<form action=\"" + this.choices.form.action + "\"\n      method=\"" + this.choices.form.method + "\"\n      id=\"" + this.choices.form.id + "\"\n      class=\"" + this.choices.form["class"] + "\">\n    " + fields_template + "\n\n    " + submit + "\n</form>";
-      this.container.html(form_template);
-      this.form = this.container.find('form');
-      return this.form.submit(function(evt) {
+      this.$el.find('form').submit(function(evt) {
         evt.preventDefault();
-        return _this.submit();
+        return _this.trigger('submit');
       });
-    };
-
-    ReForm.prototype.clean = function() {
-      var fields;
-      fields = this.form.find(':input');
-      return fields.each(function() {
-        var tag, type;
-        type = this.type;
-        tag = this.tagName.toLowerCase();
-        if (type === 'text' || type === 'password' || tag === 'textarea') {
-          return jQuery(this).val('');
-        } else if (type === 'hidden') {
-          return jQuery(this).val('');
-        } else if (type === 'checkbox' || type === 'radio') {
-          return jQuery(this).attr('checked', false);
-        } else if (tag === 'select') {
-          return jQuery(this).val('');
-        }
-      });
-    };
-
-    ReForm.prototype.toJSON = function() {
-      var data, obj, _i, _len, _ref;
-      data = {};
-      _ref = this.form.serializeArray();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        obj = _ref[_i];
-        data[obj.name] = obj.value;
-      }
-      return data;
-    };
-
-    ReForm.prototype.submit = function() {
+      return this;
+    },
+    save: function() {
       var _this = this;
-      return $.post(this.choices.form.action, this.toJSON(), function(data) {
-        var bubbleUp, i, key, node, val, validation_div, _base, _ref, _ref2;
-        if (data != null ? data.success : void 0) {
-          (_this.form.find('.error-field')).remove();
-          (_this.form.find('.error')).removeClass('error');
-          bubbleUp = (_ref = _this.choices.onSuccess(data)) != null ? _ref : true;
-          if (data.redirect && bubbleUp) {
-            return window.location = data.redirect;
-          } else if (_this.choices.clean_after_save) {
-            return _this.clean();
-          }
-        } else if (data && !data.success) {
-          (_this.form.find('.error-field')).remove();
-          (_this.form.find('.error')).removeClass('error');
-          _ref2 = data.errors;
-          for (key in _ref2) {
-            val = _ref2[key];
-            if (key === "all") {
-              validation_div = $('#validation-error');
-              if (validation_div.length) validation_div.remove();
-              _this.form.find('.reform-field-wrapper:last').before("<div id=\"validation-error\" class=\"error-field\">\n    " + val + "\n</div>");
-            } else {
-              node = _this.form.find("#id_" + key);
-              if (!node.length) node = _this.form.find("input[name=" + key + "]");
-              i = 0;
-              while (!node.is(".reform-field-wrapper") && i < 5) {
-                node = node.parent();
-                i++;
-              }
-              node.append("<div class=\"error-field\">\n    " + val + "\n</div>");
-              node.parent().addClass('error');
-            }
-          }
-          return typeof (_base = _this.choices).onError === "function" ? _base.onError(data) : void 0;
+      return this.model.save(this.get(), {
+        success: function(model, resp) {
+          _this.cleanErrors();
+          return _this.trigger('success', resp);
+        },
+        error: function(model, resp) {
+          resp = JSON.parse(resp.responseText);
+          _this.errors(resp.errors || {});
+          return _this.trigger('error', resp);
         }
-      }, 'json');
-    };
+      });
+    },
+    errors: function(vals) {
+      var field, msg, name;
+      if (this._errors == null) this._errors = {};
+      if (vals) {
+        this._errors = _.extend(this._errors, vals);
+        for (name in vals) {
+          msg = vals[name];
+          field = this.$el.find(".field-container[for=" + name + "]");
+          field.find("#id_" + name).addClass('error');
+          field.find("label").addClass('error');
+          if (!field.find("small.error").length) {
+            field.find(".widget-container").after("<small class='error'>" + msg + "</smalll>");
+          }
+        }
+      } else {
+        return this._errors;
+      }
+    },
+    cleanErrors: function() {
+      this.$el.find('small.error').remove();
+      return this.$el.find('.error').removeClass('error');
+    },
+    get: function(fieldName) {
+      var field, vals, _i, _len, _ref;
+      if (fieldName == null) fieldName = '__all__';
+      if (fieldName === '__all__') {
+        vals = {};
+        _ref = this.fields;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          field = _ref[_i];
+          vals[field.name] = field.instance.get();
+        }
+        return vals;
+      } else {
+        field = _.find(this.fields, function(f) {
+          return f.name === fieldName;
+        });
+        return field.instance.get();
+      }
+    },
+    set: function(vals) {
+      var field, key, value, _ref, _results;
+      if (vals == null) vals = {};
+      _results = [];
+      for (key in vals) {
+        value = vals[key];
+        field = _.find(this.fields, function(f) {
+          return f.name === key;
+        });
+        _results.push(field != null ? (_ref = field.instance) != null ? typeof _ref.set === "function" ? _ref.set(value) : void 0 : void 0 : void 0);
+      }
+      return _results;
+    }
+  });
 
-    return ReForm;
-
-  })();
-
-  window.reForm = {};
-
-  window.reForm.Form = ReForm;
-
-  window.reForm.CommonWidgets = CommonWidgets;
-
-  window.reForm.json_extend = json_extend;
+  window.ReForm = {
+    Form: BaseFormView,
+    Widget: BaseWidget,
+    commonWidgets: {
+      TextWidget: TextWidget,
+      TextAreaWidget: TextAreaWidget
+    }
+  };
 
 }).call(this);
