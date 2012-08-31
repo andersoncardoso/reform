@@ -25,7 +25,7 @@ textareaTemplate = """
 <textarea name="<%=name%>" id="id_<%=name%>"><%=value%></textarea>
 """
 
-BaseWidget = Backbone.View.extend
+Widget = Backbone.View.extend
     initialize: () ->
         _.bindAll this
         @_template = _.template @template
@@ -42,10 +42,10 @@ BaseWidget = Backbone.View.extend
     get: () ->
         @$el.find("input[name=#{@name}]").val()
 
-TextWidget = BaseWidget.extend
+TextWidget = Widget.extend
     template: textTemplate
 
-TextAreaWidget = BaseWidget.extend
+TextAreaWidget = Widget.extend
     template: textareaTemplate
 
     set: (value) ->
@@ -55,7 +55,7 @@ TextAreaWidget = BaseWidget.extend
         @$el.find("textarea").val()
 
 
-BaseFormView = Backbone.View.extend
+FormView = Backbone.View.extend
     initialize: () ->
         _.bindAll this
         @formTemplate = _.template formTemplate
@@ -151,8 +151,8 @@ BaseFormView = Backbone.View.extend
 
 
 window.ReForm =
-    Form: BaseFormView
-    Widget: BaseWidget
+    Form: FormView
+    Widget: Widget
     commonWidgets:
         TextWidget: TextWidget
         TextAreaWidget: TextAreaWidget

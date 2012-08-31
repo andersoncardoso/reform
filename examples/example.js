@@ -44,7 +44,9 @@
   });
 
   DummyModel = Backbone.Model.extend({
-    url: '/model'
+    save: function(data, opts) {
+      return console.log('DummyModel save!');
+    }
   });
 
   $(function() {
