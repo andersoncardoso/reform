@@ -29,7 +29,9 @@ FormView = ReForm.Form.extend
         console.dir data
 
 DummyModel = Backbone.Model.extend
-    url: '/model'
+    save: (data, opts) ->
+        # opts?.success?()
+        console.log 'DummyModel save!'
 
 $ () ->
     myForm = new FormView

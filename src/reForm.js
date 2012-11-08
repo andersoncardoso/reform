@@ -1,5 +1,5 @@
 (function() {
-  var BaseFormView, BaseWidget, PasswordWidget, TextAreaWidget, TextWidget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
+  var FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
 
   formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"send\" />\n    </div>\n</form>";
 
@@ -9,7 +9,7 @@
 
   textareaTemplate = "<textarea name=\"<%=name%>\" id=\"id_<%=name%>\"><%=value%></textarea>";
 
-  BaseWidget = Backbone.View.extend({
+  Widget = Backbone.View.extend({
     initialize: function() {
       _.bindAll(this);
       this._template = _.template(this.template);
@@ -28,27 +28,27 @@
     }
   });
 
-  TextWidget = BaseWidget.extend({
+  TextWidget = Widget.extend({
     template: textTemplate,
     initialize: function() {
       var _base;
       this.options.type = 'text';
       if ((_base = this.options).attrs == null) _base.attrs = '';
-      return BaseWidget.prototype.initialize.apply(this, arguments);
+      return Widget.prototype.initialize.apply(this, arguments);
     }
   });
 
-  PasswordWidget = BaseWidget.extend({
+  PasswordWidget = Widget.extend({
     template: textTemplate,
     initialize: function() {
       this.options.type = 'password';
       this.options.value = '';
       this.options.attrs = 'autocomplete="off"';
-      return BaseWidget.prototype.initialize.apply(this, arguments);
+      return Widget.prototype.initialize.apply(this, arguments);
     }
   });
 
-  TextAreaWidget = BaseWidget.extend({
+  TextAreaWidget = Widget.extend({
     template: textareaTemplate,
     set: function(value) {
       return this.$el.find("textarea").val(value);
@@ -58,7 +58,7 @@
     }
   });
 
-  BaseFormView = Backbone.View.extend({
+  FormView = Backbone.View.extend({
     initialize: function() {
       var _ref;
       _.bindAll(this);
@@ -171,8 +171,8 @@
   });
 
   window.ReForm = {
-    Form: BaseFormView,
-    Widget: BaseWidget,
+    Form: FormView,
+    Widget: Widget,
     commonWidgets: {
       TextWidget: TextWidget,
       PasswordWidget: PasswordWidget,
