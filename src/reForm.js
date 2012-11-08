@@ -1,11 +1,11 @@
 (function() {
-  var BaseFormView, BaseWidget, TextAreaWidget, TextWidget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
+  var BaseFormView, BaseWidget, PasswordWidget, TextAreaWidget, TextWidget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
 
   formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"send\" />\n    </div>\n</form>";
 
   fieldTemplate = "<div class=\"field-container\" for=\"<%=name%>\">\n    <label><%=label%></label>\n    <div class=\"widget-container\">\n    </div>\n</div>";
 
-  textTemplate = "<input type=\"text\" name=\"<%=name%>\" value=\"<%=value%>\" id=\"id_<%=name%>\" />";
+  textTemplate = "<input type=\"<%=type%>\" name=\"<%=name%>\" value=\"<%=value%>\" id=\"id_<%=name%>\" <%=attrs%> />";
 
   textareaTemplate = "<textarea name=\"<%=name%>\" id=\"id_<%=name%>\"><%=value%></textarea>";
 
@@ -29,7 +29,23 @@
   });
 
   TextWidget = BaseWidget.extend({
-    template: textTemplate
+    template: textTemplate,
+    initialize: function() {
+      var _base;
+      this.options.type = 'text';
+      if ((_base = this.options).attrs == null) _base.attrs = '';
+      return BaseWidget.prototype.initialize.apply(this, arguments);
+    }
+  });
+
+  PasswordWidget = BaseWidget.extend({
+    template: textTemplate,
+    initialize: function() {
+      this.options.type = 'password';
+      this.options.value = '';
+      this.options.attrs = 'autocomplete="off"';
+      return BaseWidget.prototype.initialize.apply(this, arguments);
+    }
   });
 
   TextAreaWidget = BaseWidget.extend({
@@ -159,8 +175,15 @@
     Widget: BaseWidget,
     commonWidgets: {
       TextWidget: TextWidget,
+      PasswordWidget: PasswordWidget,
       TextAreaWidget: TextAreaWidget
     }
   };
+
+  if (typeof define === "function" && define.amd) {
+    define(function() {
+      return window.ReForm;
+    });
+  }
 
 }).call(this);

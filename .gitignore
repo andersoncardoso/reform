@@ -1,1 +1,4 @@
 .*.swp
+npm-debug.log
+.*.swo
+

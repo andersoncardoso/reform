@@ -18,7 +18,7 @@ fieldTemplate = """
 """
 
 textTemplate = """
-<input type="text" name="<%=name%>" value="<%=value%>" id="id_<%=name%>" />
+<input type="<%=type%>" name="<%=name%>" value="<%=value%>" id="id_<%=name%>" <%=attrs%> />
 """
 
 textareaTemplate = """
@@ -44,6 +44,18 @@ BaseWidget = Backbone.View.extend
 
 TextWidget = BaseWidget.extend
     template: textTemplate
+    initialize: () ->
+      @options.type = 'text'
+      @options.attrs ?= ''
+      BaseWidget.prototype.initialize.apply this, arguments
+
+PasswordWidget = BaseWidget.extend
+  template: textTemplate
+  initialize: ->
+    @options.type = 'password'
+    @options.value = ''
+    @options.attrs = 'autocomplete="off"'
+    BaseWidget.prototype.initialize.apply this, arguments
 
 TextAreaWidget = BaseWidget.extend
     template: textareaTemplate
@@ -155,5 +167,9 @@ window.ReForm =
     Widget: BaseWidget
     commonWidgets:
         TextWidget: TextWidget
+        PasswordWidget: PasswordWidget
         TextAreaWidget: TextAreaWidget
 
+if typeof define is "function" and define.amd
+  define ->
+    return window.ReForm

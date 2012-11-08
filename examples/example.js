@@ -19,6 +19,10 @@
         widget: ReForm.commonWidgets.TextWidget,
         label: 'Todo:'
       }, {
+        name: 'passwd',
+        widget: ReForm.commonWidgets.PasswordWidget,
+        label: 'Password:'
+      }, {
         name: 'desc',
         widget: ReForm.commonWidgets.TextAreaWidget,
         label: 'Description:'
