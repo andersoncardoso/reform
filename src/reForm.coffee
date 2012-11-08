@@ -44,15 +44,16 @@ Widget = Backbone.View.extend
 
 TextWidget = Widget.extend
     template: textTemplate
+    type: 'text'
     initialize: () ->
-      @options.type = 'text'
+      @options.type ?= @type
       @options.attrs ?= ''
       Widget.prototype.initialize.apply this, arguments
 
 PasswordWidget = Widget.extend
   template: textTemplate
+  type: 'password'
   initialize: ->
-    @options.type = 'password'
     @options.value = ''
     @options.attrs = 'autocomplete="off"'
     Widget.prototype.initialize.apply this, arguments

@@ -30,18 +30,19 @@
 
   TextWidget = Widget.extend({
     template: textTemplate,
+    type: 'text',
     initialize: function() {
-      var _base;
-      this.options.type = 'text';
-      if ((_base = this.options).attrs == null) _base.attrs = '';
+      var _base, _base2;
+      if ((_base = this.options).type == null) _base.type = this.type;
+      if ((_base2 = this.options).attrs == null) _base2.attrs = '';
       return Widget.prototype.initialize.apply(this, arguments);
     }
   });
 
   PasswordWidget = Widget.extend({
     template: textTemplate,
+    type: 'password',
     initialize: function() {
-      this.options.type = 'password';
       this.options.value = '';
       this.options.attrs = 'autocomplete="off"';
       return Widget.prototype.initialize.apply(this, arguments);
