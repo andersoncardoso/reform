@@ -44,16 +44,15 @@ Widget = Backbone.View.extend
 
 TextWidget = Widget.extend
     template: textTemplate
-    type: 'text'
     initialize: () ->
-      @options.type ?= @type
+      @options.type = 'text'
       @options.attrs ?= ''
       Widget.prototype.initialize.apply this, arguments
 
 PasswordWidget = Widget.extend
   template: textTemplate
-  type: 'password'
   initialize: ->
+    @options.type = 'password'
     @options.value = ''
     @options.attrs = 'autocomplete="off"'
     Widget.prototype.initialize.apply this, arguments
@@ -119,11 +118,13 @@ FormView = Backbone.View.extend
         @model.save @get(),
             success: (model, resp) =>
                 @cleanErrors()
+                if resp.redirect
+                  window.location = resp.redirect
                 @trigger 'success', resp
 
             error: (model, resp) =>
-                console.log resp
                 resp = JSON.parse(resp.responseText)
+                @cleanErrors()
                 @errors(resp.errors or {})
                 @trigger 'error', resp
 

@@ -30,19 +30,18 @@
 
   TextWidget = Widget.extend({
     template: textTemplate,
-    type: 'text',
     initialize: function() {
-      var _base, _base2;
-      if ((_base = this.options).type == null) _base.type = this.type;
-      if ((_base2 = this.options).attrs == null) _base2.attrs = '';
+      var _base;
+      this.options.type = 'text';
+      if ((_base = this.options).attrs == null) _base.attrs = '';
       return Widget.prototype.initialize.apply(this, arguments);
     }
   });
 
   PasswordWidget = Widget.extend({
     template: textTemplate,
-    type: 'password',
     initialize: function() {
+      this.options.type = 'password';
       this.options.value = '';
       this.options.attrs = 'autocomplete="off"';
       return Widget.prototype.initialize.apply(this, arguments);
@@ -106,11 +105,12 @@
       return this.model.save(this.get(), {
         success: function(model, resp) {
           _this.cleanErrors();
+          if (resp.redirect) window.location = resp.redirect;
           return _this.trigger('success', resp);
         },
         error: function(model, resp) {
-          console.log(resp);
           resp = JSON.parse(resp.responseText);
+          _this.cleanErrors();
           _this.errors(resp.errors || {});
           return _this.trigger('error', resp);
         }
