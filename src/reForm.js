@@ -1,9 +1,9 @@
 (function() {
   var FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
 
-  formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"send\" />\n    </div>\n</form>";
+  formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"<%=submit_label%>\" />\n    </div>\n</form>";
 
-  fieldTemplate = "<div class=\"field-container\" for=\"<%=name%>\">\n    <label><%=label%></label>\n    <div class=\"widget-container\">\n    </div>\n</div>";
+  fieldTemplate = "<div class=\"field-container <%=container_class%>\" for=\"<%=name%>\" >\n    <label><%=label%></label>\n    <div class=\"widget-container\">\n    </div>\n</div>";
 
   textTemplate = "<input type=\"<%=type%>\" name=\"<%=name%>\" value=\"<%=value%>\" id=\"id_<%=name%>\" <%=attrs%> />";
 
@@ -69,21 +69,24 @@
       return this.on('submit', this.save);
     },
     render: function() {
-      var args, field, id, renderedField, renderedFormTemplate, widget, _fieldTemplate, _i, _len, _ref, _ref2,
+      var args, field, id, renderedField, renderedFormTemplate, submit_label, widget, _fieldTemplate, _i, _len, _ref, _ref2, _ref3,
         _this = this;
       id = ((_ref = this.options) != null ? _ref.formId : void 0) || '';
+      submit_label = ((_ref2 = this.options) != null ? _ref2.submit_label : void 0) || 'send';
       renderedFormTemplate = this.formTemplate({
-        formId: id
+        formId: id,
+        submit_label: submit_label
       });
       this.$el.html(renderedFormTemplate);
-      _ref2 = this.fields.slice(0).reverse();
-      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-        field = _ref2[_i];
+      _ref3 = this.fields.slice(0).reverse();
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        field = _ref3[_i];
         args = {
           name: field.name,
           id: "id_" + field.name,
           label: field.label || field.name,
-          value: field.value || ''
+          value: field.value || '',
+          container_class: field.container_class || ''
         };
         args = _.extend(args, field.args || {});
         widget = new field.widget(args);
@@ -102,10 +105,19 @@
     },
     save: function() {
       var _this = this;
-      return this.model.save(this.get(), {
+      this.model.set(this.get());
+      return this.model.save({}, {
         success: function(model, resp) {
+          console.log('success callback??');
+          console.dir(resp);
           _this.cleanErrors();
-          if (resp.redirect) window.location = resp.redirect;
+          if (resp.redirect) {
+            if (window.location.pathname === resp.redirect) {
+              window.location.reload();
+            } else {
+              window.location = resp.redirect;
+            }
+          }
           return _this.trigger('success', resp);
         },
         error: function(model, resp) {

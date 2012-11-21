@@ -4,13 +4,13 @@
 formTemplate = """
 <form action="" method="post" id="<%= formId %>" >
     <div>
-        <input type="submit" name="submit" value="send" />
+        <input type="submit" name="submit" value="<%=submit_label%>" />
     </div>
 </form>
 """
 
 fieldTemplate = """
-<div class="field-container" for="<%=name%>">
+<div class="field-container <%=container_class%>" for="<%=name%>" >
     <label><%=label%></label>
     <div class="widget-container">
     </div>
@@ -77,7 +77,8 @@ FormView = Backbone.View.extend
 
     render: () ->
         id = @options?.formId or ''
-        renderedFormTemplate = @formTemplate {formId:id}
+        submit_label = @options?.submit_label or 'send'
+        renderedFormTemplate = @formTemplate {formId:id, submit_label:submit_label}
         @$el.html renderedFormTemplate
 
         for field in @fields.slice(0).reverse()
@@ -87,6 +88,7 @@ FormView = Backbone.View.extend
                 id: "id_#{field.name}"
                 label: field.label or field.name
                 value: field.value or ''
+                container_class: field.container_class or ''
             args = _.extend(args, field.args or {})
 
             #instantiate widget and add reference to fields array
@@ -115,11 +117,17 @@ FormView = Backbone.View.extend
         this
 
     save: () ->
-        @model.save @get(),
+        @model.set @get()
+        @model.save {},
             success: (model, resp) =>
+                console.log 'success callback??'
+                console.dir resp
                 @cleanErrors()
                 if resp.redirect
-                  window.location = resp.redirect
+                  if window.location.pathname is resp.redirect
+                    window.location.reload()
+                  else
+                    window.location = resp.redirect
                 @trigger 'success', resp
 
             error: (model, resp) =>
