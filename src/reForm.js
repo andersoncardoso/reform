@@ -108,8 +108,6 @@
       this.model.set(this.get());
       return this.model.save({}, {
         success: function(model, resp) {
-          console.log('success callback??');
-          console.dir(resp);
           _this.cleanErrors();
           if (resp.redirect) {
             if (window.location.pathname === resp.redirect) {

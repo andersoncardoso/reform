@@ -120,8 +120,6 @@ FormView = Backbone.View.extend
         @model.set @get()
         @model.save {},
             success: (model, resp) =>
-                console.log 'success callback??'
-                console.dir resp
                 @cleanErrors()
                 if resp.redirect
                   if window.location.pathname is resp.redirect
