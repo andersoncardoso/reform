@@ -1,5 +1,5 @@
 (function() {
-  var FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
+  var CheckboxWidget, FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, checkboxTemplate, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
 
   formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"<%=submit_label%>\" />\n    </div>\n</form>";
 
@@ -8,6 +8,8 @@
   textTemplate = "<input type=\"<%=type%>\" name=\"<%=name%>\" value=\"<%=value%>\" id=\"id_<%=name%>\" <%=attrs%> />";
 
   textareaTemplate = "<textarea name=\"<%=name%>\" id=\"id_<%=name%>\"><%=value%></textarea>";
+
+  checkboxTemplate = "<label>\n  <input type=\"checkbox\" name=\"<%=name%>\" value=\"<%=choice_value%>\" id=\"id_<%=name%>_<%=choice_num%>\" class=\"checkbox\" />\n  <%=choice_title%>\n</label>";
 
   Widget = Backbone.View.extend({
     initialize: function() {
@@ -58,6 +60,26 @@
     }
   });
 
+  CheckboxWidget = Widget.extend({
+    template: checkboxTemplate,
+    render: function() {
+      var args, idx, option, renderedChoice, _ref;
+      this.$el.html('');
+      _ref = this.options.choices;
+      for (idx in _ref) {
+        option = _ref[idx];
+        args = _.extend(this.options, {
+          choice_value: option.value,
+          choice_title: option.title,
+          choice_num: idx + 1
+        });
+        renderedChoice = this._template(args);
+        this.$el.append(renderedChoice);
+      }
+      return this;
+    }
+  });
+
   FormView = Backbone.View.extend({
     initialize: function() {
       var _ref;
@@ -83,8 +105,8 @@
         field = _ref3[_i];
         args = {
           name: field.name,
-          id: "id_" + field.name,
-          label: field.label || field.name,
+          input_id: "id_" + field.name,
+          label: field.label || '',
           value: field.value || '',
           container_class: field.container_class || ''
         };
@@ -93,7 +115,7 @@
         field.instance = widget;
         _fieldTemplate = _.template(fieldTemplate);
         renderedField = $(_fieldTemplate(args));
-        renderedField.find('.widget-container').html(widget.render().el);
+        renderedField.find('.widget-container').append(widget.render().el);
         this.$el.find('form').prepend(renderedField);
         if (this.model) this.set(this.model.toJSON());
       }
@@ -187,7 +209,8 @@
     commonWidgets: {
       TextWidget: TextWidget,
       PasswordWidget: PasswordWidget,
-      TextAreaWidget: TextAreaWidget
+      TextAreaWidget: TextAreaWidget,
+      CheckboxWidget: CheckboxWidget
     }
   };
 

@@ -25,6 +25,13 @@ textareaTemplate = """
 <textarea name="<%=name%>" id="id_<%=name%>"><%=value%></textarea>
 """
 
+checkboxTemplate = """
+<label>
+  <input type="checkbox" name="<%=name%>" value="<%=choice_value%>" id="id_<%=name%>_<%=choice_num%>" class="checkbox" />
+  <%=choice_title%>
+</label>
+"""
+
 Widget = Backbone.View.extend
     initialize: () ->
         _.bindAll this
@@ -66,6 +73,28 @@ TextAreaWidget = Widget.extend
     get: () ->
         @$el.find("textarea").val()
 
+CheckboxWidget = Widget.extend
+  template: checkboxTemplate
+  render: ->
+    @$el.html ''
+    for idx, option of @options.choices
+      args = _.extend @options, {
+        choice_value: option.value
+        choice_title: option.title
+        choice_num: idx + 1
+      }
+      renderedChoice = @_template args
+      @$el.append renderedChoice
+    this
+
+    # set: (value) ->
+    #     @$el.find("textarea").val(value)
+
+    # get: () ->
+    #     @$el.find("textarea").val()
+
+
+
 
 FormView = Backbone.View.extend
     initialize: () ->
@@ -85,8 +114,8 @@ FormView = Backbone.View.extend
             # build args object
             args =
                 name: field.name
-                id: "id_#{field.name}"
-                label: field.label or field.name
+                input_id: "id_#{field.name}"
+                label: field.label or ''
                 value: field.value or ''
                 container_class: field.container_class or ''
             args = _.extend(args, field.args or {})
@@ -101,7 +130,7 @@ FormView = Backbone.View.extend
 
             # add rendered widget to field template
             renderedField = $(_fieldTemplate args)
-            renderedField.find('.widget-container').html widget.render().el
+            renderedField.find('.widget-container').append widget.render().el
 
             # prepend renderedField on form
             @$el.find('form').prepend renderedField
@@ -174,9 +203,10 @@ window.ReForm =
     Form: FormView
     Widget: Widget
     commonWidgets:
-        TextWidget: TextWidget
+        TextWidget:     TextWidget
         PasswordWidget: PasswordWidget
         TextAreaWidget: TextAreaWidget
+        CheckboxWidget: CheckboxWidget
 
 if typeof define is "function" and define.amd
   define ->
