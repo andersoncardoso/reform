@@ -27,6 +27,17 @@
         widget: ReForm.commonWidgets.TextAreaWidget,
         label: 'Description:'
       }, {
+        name: 'yes-no',
+        widget: ReForm.commonWidgets.CheckboxWidget,
+        args: {
+          choices: [
+            {
+              value: 'true',
+              title: 'Yes or No?'
+            }
+          ]
+        }
+      }, {
         name: 'annoying',
         widget: AnnoyingWidget,
         label: 'dont you dare clicking on me:'

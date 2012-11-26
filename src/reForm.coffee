@@ -87,11 +87,18 @@ CheckboxWidget = Widget.extend
       @$el.append renderedChoice
     this
 
-    # set: (value) ->
-    #     @$el.find("textarea").val(value)
+  set: (value) ->
+      if value
+        @$el.find("input[value=#{value}]").attr('checked', true)
+      else
+        @$el.find(":checked").attr('checked', false)
 
-    # get: () ->
-    #     @$el.find("textarea").val()
+  get: ->
+      checked = @$el.find(":checked")
+      if checked.length
+        return checked.val()
+      else
+        return ''
 
 
 

@@ -77,6 +77,22 @@
         this.$el.append(renderedChoice);
       }
       return this;
+    },
+    set: function(value) {
+      if (value) {
+        return this.$el.find("input[value=" + value + "]").attr('checked', true);
+      } else {
+        return this.$el.find(":checked").attr('checked', false);
+      }
+    },
+    get: function() {
+      var checked;
+      checked = this.$el.find(":checked");
+      if (checked.length) {
+        return checked.val();
+      } else {
+        return '';
+      }
     }
   });
 
