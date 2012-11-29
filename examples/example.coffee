@@ -16,7 +16,7 @@ FormView = ReForm.Form.extend
           choices: [{value: 'true', title: 'Yes or No?'}]}}
         {name: 'annoying', widget: AnnoyingWidget, label: 'dont you dare clicking on me:' }
     ]
-
+ 
     initialize: () ->
         ReForm.Form.prototype.initialize.apply this, @options
         @bind 'success', @onSuccess

@@ -141,12 +141,20 @@
       });
       return this;
     },
+    disableSubmit: function() {
+      return this.$el.find('input[type=submit]').attr('disabled', 'disabled');
+    },
+    enableSubmit: function() {
+      return this.$el.find('input[type=submit]').removeAttr('disabled');
+    },
     save: function() {
       var _this = this;
       this.model.set(this.get());
+      this.disableSubmit();
       return this.model.save({}, {
         success: function(model, resp) {
           _this.cleanErrors();
+          _this.enableSubmit();
           if (resp.redirect) {
             if (window.location.pathname === resp.redirect) {
               window.location.reload();
@@ -157,6 +165,7 @@
           return _this.trigger('success', resp);
         },
         error: function(model, resp) {
+          _this.enableSubmit();
           resp = JSON.parse(resp.responseText);
           _this.cleanErrors();
           _this.errors(resp.errors || {});

@@ -101,8 +101,6 @@ CheckboxWidget = Widget.extend
         return ''
 
 
-
-
 FormView = Backbone.View.extend
     initialize: () ->
         _.bindAll this
@@ -152,11 +150,19 @@ FormView = Backbone.View.extend
             @trigger 'submit'
         this
 
+    disableSubmit: ->
+      @$el.find('input[type=submit]').attr 'disabled', 'disabled'
+
+    enableSubmit: ->
+      @$el.find('input[type=submit]').removeAttr 'disabled'
+
     save: () ->
         @model.set @get()
+        @disableSubmit()
         @model.save {},
             success: (model, resp) =>
                 @cleanErrors()
+                @enableSubmit()
                 if resp.redirect
                   if window.location.pathname is resp.redirect
                     window.location.reload()
@@ -165,6 +171,7 @@ FormView = Backbone.View.extend
                 @trigger 'success', resp
 
             error: (model, resp) =>
+                @enableSubmit()
                 resp = JSON.parse(resp.responseText)
                 @cleanErrors()
                 @errors(resp.errors or {})
