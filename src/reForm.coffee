@@ -111,7 +111,7 @@ FormView = Backbone.View.extend
 
     render: () ->
         id = @options?.formId or ''
-        submit_label = @options?.submit_label or 'send'
+        submit_label = @options?.submit_label or (if i18n then i18n('send') else 'send')
         renderedFormTemplate = @formTemplate {formId:id, submit_label:submit_label}
         @$el.html renderedFormTemplate
 

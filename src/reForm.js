@@ -110,7 +110,7 @@
       var args, field, id, renderedField, renderedFormTemplate, submit_label, widget, _fieldTemplate, _i, _len, _ref, _ref2, _ref3,
         _this = this;
       id = ((_ref = this.options) != null ? _ref.formId : void 0) || '';
-      submit_label = ((_ref2 = this.options) != null ? _ref2.submit_label : void 0) || 'send';
+      submit_label = ((_ref2 = this.options) != null ? _ref2.submit_label : void 0) || (i18n ? i18n('send') : 'send');
       renderedFormTemplate = this.formTemplate({
         formId: id,
         submit_label: submit_label
