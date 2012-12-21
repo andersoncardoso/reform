@@ -108,13 +108,45 @@ FormView = Backbone.View.extend
         if @options?.model
             @model = @options.model
         @on 'submit', @save
+        @renderedFields = []
+        @instances = {}
+        @initializeFields()
 
     render: () ->
+        for renderedField in @renderedFields
+            renderedField.detach()
+
         id = @options?.formId or ''
         submit_label = @options?.submit_label or (if i18n then i18n('send') else 'send')
         renderedFormTemplate = @formTemplate {formId:id, submit_label:submit_label}
         @$el.html renderedFormTemplate
 
+        for renderedField in @renderedFields.slice(0).reverse()
+            # prepend renderedField on form
+            @$el.find('form').prepend renderedField
+
+        # prevent for from being submited
+        @$el.find('form').submit (evt) =>
+            evt.preventDefault()
+            @trigger 'submit'
+
+        if @model
+            @set @model.toJSON()
+        this
+
+    remove: ->
+        Backbone.View.prototype.initialize.apply this, arguments
+        @clearRenderedFields()
+
+    clearRenderedFields: ->
+        # clear the fields elements
+        for renderedField in @renderedFields
+            renderedField.remove()
+        @renderedFields.length = 0
+
+
+    initializeFields: ->
+        # create fields
         for field in @fields.slice(0).reverse()
             # build args object
             args =
@@ -127,28 +159,26 @@ FormView = Backbone.View.extend
 
             #instantiate widget and add reference to fields array
             widget = new field.widget(args)
-            field.instance = widget
+            @instances[field.name] = widget
 
             # field Template
             _fieldTemplate = _.template fieldTemplate
 
-
             # add rendered widget to field template
-            renderedField = $(_fieldTemplate args)
+            # create a div to avoid detached elements
+            container = $('<div>').html _fieldTemplate args
+            renderedField = container.children().detach();
             renderedField.find('.widget-container').append widget.render().el
 
             # prepend renderedField on form
             @$el.find('form').prepend renderedField
 
+            # save the field element reference
+            @renderedFields.push renderedField
+
             #initial values for prepolated models
             if @model
                 @set @model.toJSON()
-
-        # prevent for from being submited
-        @$el.find('form').submit (evt) =>
-            evt.preventDefault()
-            @trigger 'submit'
-        this
 
     disableSubmit: ->
       @$el.find('input[type=submit]').attr 'disabled', 'disabled'
@@ -200,16 +230,16 @@ FormView = Backbone.View.extend
         if fieldName is '__all__'
             vals = {}
             for field in @fields
-                vals[field.name] = field.instance.get()
+                vals[field.name] = @instances[field.name].get()
             return vals
         else
             field = _.find(@fields, (f)-> f.name is fieldName)
-            return field.instance.get()
+            return @instances[field.name].get()
 
     set: (vals={})->
         for key, value of vals
             field = _.find(@fields, (f)-> f.name is key)
-            field?.instance?.set?(value)
+            @instances[field?.name]?.set?(value)
 
 
 

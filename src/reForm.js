@@ -104,21 +104,57 @@
       if ((_ref = this.options) != null ? _ref.model : void 0) {
         this.model = this.options.model;
       }
-      return this.on('submit', this.save);
+      this.on('submit', this.save);
+      this.renderedFields = [];
+      this.instances = {};
+      return this.initializeFields();
     },
     render: function() {
-      var args, field, id, renderedField, renderedFormTemplate, submit_label, widget, _fieldTemplate, _i, _len, _ref, _ref2, _ref3,
+      var id, renderedField, renderedFormTemplate, submit_label, _i, _j, _len, _len2, _ref, _ref2, _ref3, _ref4,
         _this = this;
-      id = ((_ref = this.options) != null ? _ref.formId : void 0) || '';
-      submit_label = ((_ref2 = this.options) != null ? _ref2.submit_label : void 0) || (i18n ? i18n('send') : 'send');
+      _ref = this.renderedFields;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        renderedField = _ref[_i];
+        renderedField.detach();
+      }
+      id = ((_ref2 = this.options) != null ? _ref2.formId : void 0) || '';
+      submit_label = ((_ref3 = this.options) != null ? _ref3.submit_label : void 0) || (i18n ? i18n('send') : 'send');
       renderedFormTemplate = this.formTemplate({
         formId: id,
         submit_label: submit_label
       });
       this.$el.html(renderedFormTemplate);
-      _ref3 = this.fields.slice(0).reverse();
-      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-        field = _ref3[_i];
+      _ref4 = this.renderedFields.slice(0).reverse();
+      for (_j = 0, _len2 = _ref4.length; _j < _len2; _j++) {
+        renderedField = _ref4[_j];
+        this.$el.find('form').prepend(renderedField);
+      }
+      this.$el.find('form').submit(function(evt) {
+        evt.preventDefault();
+        return _this.trigger('submit');
+      });
+      if (this.model) this.set(this.model.toJSON());
+      return this;
+    },
+    remove: function() {
+      Backbone.View.prototype.initialize.apply(this, arguments);
+      return this.clearRenderedFields();
+    },
+    clearRenderedFields: function() {
+      var renderedField, _i, _len, _ref;
+      _ref = this.renderedFields;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        renderedField = _ref[_i];
+        renderedField.remove();
+      }
+      return this.renderedFields.length = 0;
+    },
+    initializeFields: function() {
+      var args, container, field, renderedField, widget, _fieldTemplate, _i, _len, _ref, _results;
+      _ref = this.fields.slice(0).reverse();
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        field = _ref[_i];
         args = {
           name: field.name,
           input_id: "id_" + field.name,
@@ -128,18 +164,20 @@
         };
         args = _.extend(args, field.args || {});
         widget = new field.widget(args);
-        field.instance = widget;
+        this.instances[field.name] = widget;
         _fieldTemplate = _.template(fieldTemplate);
-        renderedField = $(_fieldTemplate(args));
+        container = $('<div>').html(_fieldTemplate(args));
+        renderedField = container.children().detach();
         renderedField.find('.widget-container').append(widget.render().el);
         this.$el.find('form').prepend(renderedField);
-        if (this.model) this.set(this.model.toJSON());
+        this.renderedFields.push(renderedField);
+        if (this.model) {
+          _results.push(this.set(this.model.toJSON()));
+        } else {
+          _results.push(void 0);
+        }
       }
-      this.$el.find('form').submit(function(evt) {
-        evt.preventDefault();
-        return _this.trigger('submit');
-      });
-      return this;
+      return _results;
     },
     disableSubmit: function() {
       return this.$el.find('input[type=submit]').attr('disabled', 'disabled');
@@ -203,14 +241,14 @@
         _ref = this.fields;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           field = _ref[_i];
-          vals[field.name] = field.instance.get();
+          vals[field.name] = this.instances[field.name].get();
         }
         return vals;
       } else {
         field = _.find(this.fields, function(f) {
           return f.name === fieldName;
         });
-        return field.instance.get();
+        return this.instances[field.name].get();
       }
     },
     set: function(vals) {
@@ -222,7 +260,7 @@
         field = _.find(this.fields, function(f) {
           return f.name === key;
         });
-        _results.push(field != null ? (_ref = field.instance) != null ? typeof _ref.set === "function" ? _ref.set(value) : void 0 : void 0 : void 0);
+        _results.push((_ref = this.instances[field != null ? field.name : void 0]) != null ? typeof _ref.set === "function" ? _ref.set(value) : void 0 : void 0);
       }
       return _results;
     }
