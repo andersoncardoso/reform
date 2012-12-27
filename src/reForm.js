@@ -124,7 +124,7 @@
         submit_label: submit_label
       });
       this.$el.html(renderedFormTemplate);
-      _ref4 = this.renderedFields.slice(0).reverse();
+      _ref4 = this.renderedFields;
       for (_j = 0, _len2 = _ref4.length; _j < _len2; _j++) {
         renderedField = _ref4[_j];
         this.$el.find('form').prepend(renderedField);

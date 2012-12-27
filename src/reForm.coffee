@@ -121,7 +121,7 @@ FormView = Backbone.View.extend
         renderedFormTemplate = @formTemplate {formId:id, submit_label:submit_label}
         @$el.html renderedFormTemplate
 
-        for renderedField in @renderedFields.slice(0).reverse()
+        for renderedField in @renderedFields
             # prepend renderedField on form
             @$el.find('form').prepend renderedField
 
