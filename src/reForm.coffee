@@ -136,12 +136,17 @@ FormView = Backbone.View.extend
 
     remove: ->
         Backbone.View.prototype.initialize.apply this, arguments
+        @clearInstances()
         @clearRenderedFields()
+
+    clearInstances: ->
+        for name, instance of @instances
+            instance.remove()
+            delete @instances[name]
 
     clearRenderedFields: ->
         # clear the fields elements
-        for renderedField in @renderedFields
-            renderedField.remove()
+        renderedField.remove() for renderedField in @renderedFields
         @renderedFields.length = 0
 
 

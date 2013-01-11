@@ -138,7 +138,19 @@
     },
     remove: function() {
       Backbone.View.prototype.initialize.apply(this, arguments);
+      this.clearInstances();
       return this.clearRenderedFields();
+    },
+    clearInstances: function() {
+      var instance, name, _ref, _results;
+      _ref = this.instances;
+      _results = [];
+      for (name in _ref) {
+        instance = _ref[name];
+        instance.remove();
+        _results.push(delete this.instances[name]);
+      }
+      return _results;
     },
     clearRenderedFields: function() {
       var renderedField, _i, _len, _ref;
