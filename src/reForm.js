@@ -1,5 +1,5 @@
 (function() {
-  var CheckboxWidget, FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, checkboxTemplate, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
+  var CheckboxWidget, DropdownWidget, FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, checkboxTemplate, dropdownTemplate, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
 
   formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"<%=submit_label%>\" />\n    </div>\n</form>";
 
@@ -7,14 +7,18 @@
 
   textTemplate = "<input type=\"<%=type%>\" name=\"<%=name%>\" value=\"<%=value%>\" id=\"id_<%=name%>\" <%=attrs%> />";
 
-  textareaTemplate = "<textarea name=\"<%=name%>\" id=\"id_<%=name%>\"><%=value%></textarea>";
+  textareaTemplate = "<textarea name=\"<%=name%>\" id=\"id_<%=name%>\" <%=attrs%>><%=value%></textarea>";
 
   checkboxTemplate = "<label>\n  <input type=\"checkbox\" name=\"<%=name%>\" value=\"<%=choice_value%>\" id=\"id_<%=name%>_<%=choice_num%>\" class=\"checkbox\" />\n  <%=choice_title%>\n</label>";
 
+  dropdownTemplate = "<select name=\"<%=name%>\" id=\"id_<%=name%>\" <%=attrs%>>\n  <%_.each(choices, function (choice) {%>\n    <option value=\"<%=choice.value%>\" <%=choice.attrs%>><%=choice.title%></option>\n  <% }); %>\n</select>";
+
   Widget = Backbone.View.extend({
     initialize: function() {
+      var _base;
       _.bindAll(this);
       this._template = _.template(this.template);
+      if ((_base = this.options).attrs == null) _base.attrs = '';
       return this.name = this.options.name;
     },
     render: function() {
@@ -22,20 +26,21 @@
       if (typeof this.behavior === "function") this.behavior();
       return this;
     },
+    getInputElement: function() {
+      return this.$("input[name=" + this.name + "]");
+    },
     set: function(value) {
-      return this.$el.find("input[name=" + this.name + "]").val(value);
+      return this.getInputElement().val(value);
     },
     get: function() {
-      return this.$el.find("input[name=" + this.name + "]").val();
+      return this.getInputElement().val();
     }
   });
 
   TextWidget = Widget.extend({
     template: textTemplate,
     initialize: function() {
-      var _base;
       this.options.type = 'text';
-      if ((_base = this.options).attrs == null) _base.attrs = '';
       return Widget.prototype.initialize.apply(this, arguments);
     }
   });
@@ -52,11 +57,8 @@
 
   TextAreaWidget = Widget.extend({
     template: textareaTemplate,
-    set: function(value) {
-      return this.$el.find("textarea").val(value);
-    },
-    get: function() {
-      return this.$el.find("textarea").val();
+    getInputElement: function() {
+      return this.$('textarea');
     }
   });
 
@@ -80,14 +82,14 @@
     },
     set: function(value) {
       if (value) {
-        return this.$el.find("input[value=" + value + "]").attr('checked', true);
+        return this.$("input[value=" + value + "]").attr('checked', true);
       } else {
-        return this.$el.find(":checked").attr('checked', false);
+        return this.$(":checked").attr('checked', false);
       }
     },
     get: function() {
       var checked;
-      checked = this.$el.find(":checked");
+      checked = this.$(":checked");
       if (checked.length) {
         return checked.val();
       } else {
@@ -96,11 +98,24 @@
     }
   });
 
+  DropdownWidget = Widget.extend({
+    template: dropdownTemplate,
+    initialize: function() {
+      var _base;
+      if ((_base = this.options).choices == null) _base.choices = [];
+      return Widget.prototype.initialize.apply(this, arguments);
+    },
+    getInputElement: function() {
+      return this.$("select[name=" + this.options.name + "]");
+    }
+  });
+
   FormView = Backbone.View.extend({
+    template: formTemplate,
     initialize: function() {
       var _ref;
+      this._template = _.template(this.template);
       _.bindAll(this);
-      this.formTemplate = _.template(formTemplate);
       if ((_ref = this.options) != null ? _ref.model : void 0) {
         this.model = this.options.model;
       }
@@ -118,8 +133,8 @@
         renderedField.detach();
       }
       id = ((_ref2 = this.options) != null ? _ref2.formId : void 0) || '';
-      submit_label = ((_ref3 = this.options) != null ? _ref3.submit_label : void 0) || (i18n ? i18n('send') : 'send');
-      renderedFormTemplate = this.formTemplate({
+      submit_label = ((_ref3 = this.options) != null ? _ref3.submit_label : void 0) || (_.isFunction(window.i18n) ? i18n('send') : 'send');
+      renderedFormTemplate = this._template({
         formId: id,
         submit_label: submit_label
       });
@@ -127,9 +142,9 @@
       _ref4 = this.renderedFields;
       for (_j = 0, _len2 = _ref4.length; _j < _len2; _j++) {
         renderedField = _ref4[_j];
-        this.$el.find('form').prepend(renderedField);
+        this.$('form').prepend(renderedField);
       }
-      this.$el.find('form').submit(function(evt) {
+      this.$('form').submit(function(evt) {
         evt.preventDefault();
         return _this.trigger('submit');
       });
@@ -148,7 +163,7 @@
       for (name in _ref) {
         instance = _ref[name];
         instance.remove();
-        _results.push(delete this.instances[name]);
+        _results.push(this.instances[name] = null);
       }
       return _results;
     },
@@ -181,7 +196,7 @@
         container = $('<div>').html(_fieldTemplate(args));
         renderedField = container.children().detach();
         renderedField.find('.widget-container').append(widget.render().el);
-        this.$el.find('form').prepend(renderedField);
+        this.$('form').prepend(renderedField);
         this.renderedFields.push(renderedField);
         if (this.model) {
           _results.push(this.set(this.model.toJSON()));
@@ -192,10 +207,10 @@
       return _results;
     },
     disableSubmit: function() {
-      return this.$el.find('input[type=submit]').attr('disabled', 'disabled');
+      return this.$('input[type=submit]').attr('disabled', 'disabled');
     },
     enableSubmit: function() {
-      return this.$el.find('input[type=submit]').removeAttr('disabled');
+      return this.$('input[type=submit]').removeAttr('disabled');
     },
     save: function() {
       var _this = this;
@@ -230,7 +245,7 @@
         this._errors = _.extend(this._errors, vals);
         for (name in vals) {
           msg = vals[name];
-          field = this.$el.find(".field-container[for=" + name + "]");
+          field = this.$(".field-container[for=" + name + "]");
           field.find("#id_" + name).addClass('error');
           field.find("label").addClass('error');
           if (!field.find("small.error").length) {
@@ -242,8 +257,8 @@
       }
     },
     cleanErrors: function() {
-      this.$el.find('small.error').remove();
-      return this.$el.find('.error').removeClass('error');
+      this.$('small.error').remove();
+      return this.$('.error').removeClass('error');
     },
     get: function(fieldName) {
       var field, vals, _i, _len, _ref;
@@ -285,7 +300,8 @@
       TextWidget: TextWidget,
       PasswordWidget: PasswordWidget,
       TextAreaWidget: TextAreaWidget,
-      CheckboxWidget: CheckboxWidget
+      CheckboxWidget: CheckboxWidget,
+      DropdownWidget: DropdownWidget
     }
   };
 

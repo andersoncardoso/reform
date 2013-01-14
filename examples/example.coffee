@@ -12,11 +12,13 @@ FormView = ReForm.Form.extend
         {name: 'title', widget: ReForm.commonWidgets.TextWidget, label: 'Todo:'}
         {name: 'passwd', widget: ReForm.commonWidgets.PasswordWidget, label: 'Password:'}
         {name: 'desc', widget: ReForm.commonWidgets.TextAreaWidget, label: 'Description:'}
+        {name: 'dropdown', widget: ReForm.commonWidgets.DropdownWidget, label: 'Dropdown:', args:{
+          choices: [{value: 'foo', title: 'Foo'}, {value: 'bar', title: 'Bar'}]}}
         {name: 'yes-no', widget: ReForm.commonWidgets.CheckboxWidget, args:{
           choices: [{value: 'true', title: 'Yes or No?'}]}}
         {name: 'annoying', widget: AnnoyingWidget, label: 'dont you dare clicking on me:' }
     ]
- 
+
     initialize: () ->
         ReForm.Form.prototype.initialize.apply this, @options
         @bind 'success', @onSuccess

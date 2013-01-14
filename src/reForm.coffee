@@ -22,7 +22,7 @@ textTemplate = """
 """
 
 textareaTemplate = """
-<textarea name="<%=name%>" id="id_<%=name%>"><%=value%></textarea>
+<textarea name="<%=name%>" id="id_<%=name%>" <%=attrs%>><%=value%></textarea>
 """
 
 checkboxTemplate = """
@@ -32,29 +32,40 @@ checkboxTemplate = """
 </label>
 """
 
+dropdownTemplate = """
+<select name="<%=name%>" id="id_<%=name%>" <%=attrs%>>
+  <%_.each(choices, function (choice) {%>
+    <option value="<%=choice.value%>" <%=choice.attrs%>><%=choice.title%></option>
+  <% }); %>
+</select>
+"""
+
 Widget = Backbone.View.extend
-    initialize: () ->
-        _.bindAll this
-        @_template = _.template @template
-        @name = @options.name
+  initialize: () ->
+    _.bindAll this
+    @_template = _.template @template
+    @options.attrs ?= ''
+    @name = @options.name
 
-    render: ()->
-        @$el.html(@_template @options)
-        @behavior?()
-        this
+  render: ()->
+    @$el.html(@_template @options)
+    @behavior?()
+    this
 
-    set: (value) ->
-        @$el.find("input[name=#{@name}]").val(value)
+  getInputElement: ->
+    @$("input[name=#{@name}]")
 
-    get: () ->
-        @$el.find("input[name=#{@name}]").val()
+  set: (value) ->
+    @getInputElement().val(value)
+
+  get: () ->
+    @getInputElement().val()
 
 TextWidget = Widget.extend
-    template: textTemplate
-    initialize: () ->
-      @options.type = 'text'
-      @options.attrs ?= ''
-      Widget.prototype.initialize.apply this, arguments
+  template: textTemplate
+  initialize: () ->
+    @options.type = 'text'
+    Widget.prototype.initialize.apply this, arguments
 
 PasswordWidget = Widget.extend
   template: textTemplate
@@ -65,13 +76,10 @@ PasswordWidget = Widget.extend
     Widget.prototype.initialize.apply this, arguments
 
 TextAreaWidget = Widget.extend
-    template: textareaTemplate
+  template: textareaTemplate
 
-    set: (value) ->
-        @$el.find("textarea").val(value)
-
-    get: () ->
-        @$el.find("textarea").val()
+  getInputElement: () ->
+    @$('textarea')
 
 CheckboxWidget = Widget.extend
   template: checkboxTemplate
@@ -88,174 +96,187 @@ CheckboxWidget = Widget.extend
     this
 
   set: (value) ->
-      if value
-        @$el.find("input[value=#{value}]").attr('checked', true)
-      else
-        @$el.find(":checked").attr('checked', false)
+    if value
+      @$("input[value=#{value}]").attr('checked', true)
+    else
+      @$(":checked").attr('checked', false)
 
   get: ->
-      checked = @$el.find(":checked")
-      if checked.length
-        return checked.val()
-      else
-        return ''
+    checked = @$(":checked")
+    if checked.length
+      return checked.val()
+    else
+      return ''
+
+DropdownWidget = Widget.extend
+  template: dropdownTemplate
+
+  initialize: () ->
+    @options.choices ?= []
+    Widget.prototype.initialize.apply this, arguments
+
+  getInputElement: ->
+    @$("select[name=#{@options.name}]")
 
 
 FormView = Backbone.View.extend
-    initialize: () ->
-        _.bindAll this
-        @formTemplate = _.template formTemplate
-        if @options?.model
-            @model = @options.model
-        @on 'submit', @save
-        @renderedFields = []
-        @instances = {}
-        @initializeFields()
+  template: formTemplate
 
-    render: () ->
-        for renderedField in @renderedFields
-            renderedField.detach()
+  initialize: () ->
+    @_template = _.template @template
+    _.bindAll this
+    if @options?.model
+      @model = @options.model
+    @on 'submit', @save
+    @renderedFields = []
+    @instances = {}
+    @initializeFields()
 
-        id = @options?.formId or ''
-        submit_label = @options?.submit_label or (if i18n then i18n('send') else 'send')
-        renderedFormTemplate = @formTemplate {formId:id, submit_label:submit_label}
-        @$el.html renderedFormTemplate
+  render: () ->
+    for renderedField in @renderedFields
+      renderedField.detach()
 
-        for renderedField in @renderedFields
-            # prepend renderedField on form
-            @$el.find('form').prepend renderedField
+    id = @options?.formId or ''
+    submit_label = @options?.submit_label or (if _.isFunction(window.i18n) then i18n('send') else 'send')
+    renderedFormTemplate = @_template {formId:id, submit_label:submit_label}
+    @$el.html renderedFormTemplate
 
-        # prevent for from being submited
-        @$el.find('form').submit (evt) =>
-            evt.preventDefault()
-            @trigger 'submit'
+    for renderedField in @renderedFields
+      # prepend renderedField on form
+      @$('form').prepend renderedField
 
-        if @model
-            @set @model.toJSON()
-        this
+    # prevent for from being submited
+    @$('form').submit (evt) =>
+      evt.preventDefault()
+      @trigger 'submit'
 
-    remove: ->
-        Backbone.View.prototype.initialize.apply this, arguments
-        @clearInstances()
-        @clearRenderedFields()
+    if @model
+      @set @model.toJSON()
+    this
 
-    clearInstances: ->
-        for name, instance of @instances
-            instance.remove()
-            delete @instances[name]
+  remove: ->
+    Backbone.View.prototype.initialize.apply this, arguments
+    @clearInstances()
+    @clearRenderedFields()
 
-    clearRenderedFields: ->
-        # clear the fields elements
-        renderedField.remove() for renderedField in @renderedFields
-        @renderedFields.length = 0
+  clearInstances: ->
+    for name, instance of @instances
+      instance.remove()
+      @instances[name] = null
 
-
-    initializeFields: ->
-        # create fields
-        for field in @fields.slice(0).reverse()
-            # build args object
-            args =
-                name: field.name
-                input_id: "id_#{field.name}"
-                label: field.label or ''
-                value: field.value or ''
-                container_class: field.container_class or ''
-            args = _.extend(args, field.args or {})
-
-            #instantiate widget and add reference to fields array
-            widget = new field.widget(args)
-            @instances[field.name] = widget
-
-            # field Template
-            _fieldTemplate = _.template fieldTemplate
-
-            # add rendered widget to field template
-            # create a div to avoid detached elements
-            container = $('<div>').html _fieldTemplate args
-            renderedField = container.children().detach();
-            renderedField.find('.widget-container').append widget.render().el
-
-            # prepend renderedField on form
-            @$el.find('form').prepend renderedField
-
-            # save the field element reference
-            @renderedFields.push renderedField
-
-            #initial values for prepolated models
-            if @model
-                @set @model.toJSON()
-
-    disableSubmit: ->
-      @$el.find('input[type=submit]').attr 'disabled', 'disabled'
-
-    enableSubmit: ->
-      @$el.find('input[type=submit]').removeAttr 'disabled'
-
-    save: () ->
-        @model.set @get()
-        @disableSubmit()
-        @model.save {},
-            success: (model, resp) =>
-                @cleanErrors()
-                @enableSubmit()
-                if resp.redirect
-                  if window.location.pathname is resp.redirect
-                    window.location.reload()
-                  else
-                    window.location = resp.redirect
-                @trigger 'success', resp
-
-            error: (model, resp) =>
-                @enableSubmit()
-                resp = JSON.parse(resp.responseText)
-                @cleanErrors()
-                @errors(resp.errors or {})
-                @trigger 'error', resp
-
-    errors: (vals) ->
-        @_errors ?= {}
-        if vals
-            @_errors = _.extend(@_errors, vals)
-            for name, msg of vals
-                field = @$el.find(".field-container[for=#{name}]")
-                field.find("#id_#{name}").addClass('error')
-                field.find("label").addClass 'error'
-                if not field.find("small.error").length
-                    field.find(".widget-container").after "<small class='error'>#{msg}</smalll>"
-            return
-        else
-            return @_errors
-
-    cleanErrors: () ->
-        @$el.find('small.error').remove()
-        @$el.find('.error').removeClass 'error'
+  clearRenderedFields: ->
+    # clear the fields elements
+    renderedField.remove() for renderedField in @renderedFields
+    @renderedFields.length = 0
 
 
-    get: (fieldName='__all__') ->
-        if fieldName is '__all__'
-            vals = {}
-            for field in @fields
-                vals[field.name] = @instances[field.name].get()
-            return vals
-        else
-            field = _.find(@fields, (f)-> f.name is fieldName)
-            return @instances[field.name].get()
+  initializeFields: ->
+    # create fields
+    for field in @fields.slice(0).reverse()
+      # build args object
+      args =
+        name: field.name
+        input_id: "id_#{field.name}"
+        label: field.label or ''
+        value: field.value or ''
+        container_class: field.container_class or ''
+      args = _.extend(args, field.args or {})
 
-    set: (vals={})->
-        for key, value of vals
-            field = _.find(@fields, (f)-> f.name is key)
-            @instances[field?.name]?.set?(value)
+      #instantiate widget and add reference to fields array
+      widget = new field.widget(args)
+      @instances[field.name] = widget
+
+      # field Template
+      _fieldTemplate = _.template fieldTemplate
+
+      # add rendered widget to field template
+      # create a div to avoid detached elements
+      container = $('<div>').html _fieldTemplate args
+      renderedField = container.children().detach();
+      renderedField.find('.widget-container').append widget.render().el
+
+      # prepend renderedField on form
+      @$('form').prepend renderedField
+
+      # save the field element reference
+      @renderedFields.push renderedField
+
+      #initial values for prepolated models
+      if @model
+        @set @model.toJSON()
+
+  disableSubmit: ->
+    @$('input[type=submit]').attr 'disabled', 'disabled'
+
+  enableSubmit: ->
+    @$('input[type=submit]').removeAttr 'disabled'
+
+  save: () ->
+    @model.set @get()
+    @disableSubmit()
+    @model.save {},
+      success: (model, resp) =>
+        @cleanErrors()
+        @enableSubmit()
+        if resp.redirect
+          if window.location.pathname is resp.redirect
+            window.location.reload()
+          else
+            window.location = resp.redirect
+        @trigger 'success', resp
+
+      error: (model, resp) =>
+        @enableSubmit()
+        resp = JSON.parse(resp.responseText)
+        @cleanErrors()
+        @errors(resp.errors or {})
+        @trigger 'error', resp
+
+  errors: (vals) ->
+    @_errors ?= {}
+    if vals
+      @_errors = _.extend(@_errors, vals)
+      for name, msg of vals
+        field = @$(".field-container[for=#{name}]")
+        field.find("#id_#{name}").addClass('error')
+        field.find("label").addClass 'error'
+        if not field.find("small.error").length
+          field.find(".widget-container").after "<small class='error'>#{msg}</smalll>"
+      return
+    else
+      return @_errors
+
+  cleanErrors: () ->
+    @$('small.error').remove()
+    @$('.error').removeClass 'error'
+
+
+  get: (fieldName='__all__') ->
+    if fieldName is '__all__'
+      vals = {}
+      for field in @fields
+        vals[field.name] = @instances[field.name].get()
+      return vals
+    else
+      field = _.find(@fields, (f)-> f.name is fieldName)
+      return @instances[field.name].get()
+
+  set: (vals={})->
+    for key, value of vals
+      field = _.find(@fields, (f)-> f.name is key)
+      @instances[field?.name]?.set?(value)
 
 
 
 window.ReForm =
-    Form: FormView
-    Widget: Widget
-    commonWidgets:
-        TextWidget:     TextWidget
-        PasswordWidget: PasswordWidget
-        TextAreaWidget: TextAreaWidget
-        CheckboxWidget: CheckboxWidget
+  Form: FormView
+  Widget: Widget
+  commonWidgets:
+    TextWidget:     TextWidget
+    PasswordWidget: PasswordWidget
+    TextAreaWidget: TextAreaWidget
+    CheckboxWidget: CheckboxWidget
+    DropdownWidget: DropdownWidget
 
 if typeof define is "function" and define.amd
   define ->

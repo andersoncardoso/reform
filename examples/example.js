@@ -27,6 +27,21 @@
         widget: ReForm.commonWidgets.TextAreaWidget,
         label: 'Description:'
       }, {
+        name: 'dropdown',
+        widget: ReForm.commonWidgets.DropdownWidget,
+        label: 'Dropdown:',
+        args: {
+          choices: [
+            {
+              value: 'foo',
+              title: 'Foo'
+            }, {
+              value: 'bar',
+              title: 'Bar'
+            }
+          ]
+        }
+      }, {
         name: 'yes-no',
         widget: ReForm.commonWidgets.CheckboxWidget,
         args: {
