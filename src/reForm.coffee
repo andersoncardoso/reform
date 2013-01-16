@@ -127,6 +127,7 @@ FormView = Backbone.View.extend
     _.bindAll this
     if @options?.model
       @model = @options.model
+    @patch = @options?.patch ? false
     @on 'submit', @save
     @renderedFields = []
     @instances = {}
@@ -215,6 +216,7 @@ FormView = Backbone.View.extend
     @disableSubmit()
     @model.save @get(),
       wait: true
+      patch: @patch
       success: (model, resp) =>
         @cleanErrors()
         @enableSubmit()

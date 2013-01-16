@@ -113,12 +113,13 @@
   FormView = Backbone.View.extend({
     template: formTemplate,
     initialize: function() {
-      var _ref;
+      var _ref, _ref2, _ref3;
       this._template = _.template(this.template);
       _.bindAll(this);
       if ((_ref = this.options) != null ? _ref.model : void 0) {
         this.model = this.options.model;
       }
+      this.patch = (_ref2 = (_ref3 = this.options) != null ? _ref3.patch : void 0) != null ? _ref2 : false;
       this.on('submit', this.save);
       this.renderedFields = [];
       this.instances = {};
@@ -217,6 +218,7 @@
       this.disableSubmit();
       return this.model.save(this.get(), {
         wait: true,
+        patch: this.patch,
         success: function(model, resp) {
           _this.cleanErrors();
           _this.enableSubmit();
