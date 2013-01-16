@@ -212,9 +212,9 @@ FormView = Backbone.View.extend
     @$('input[type=submit]').removeAttr 'disabled'
 
   save: () ->
-    @model.set @get()
     @disableSubmit()
-    @model.save {},
+    @model.save @get(),
+      wait: true
       success: (model, resp) =>
         @cleanErrors()
         @enableSubmit()

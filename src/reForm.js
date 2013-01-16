@@ -214,9 +214,9 @@
     },
     save: function() {
       var _this = this;
-      this.model.set(this.get());
       this.disableSubmit();
-      return this.model.save({}, {
+      return this.model.save(this.get(), {
+        wait: true,
         success: function(model, resp) {
           _this.cleanErrors();
           _this.enableSubmit();
