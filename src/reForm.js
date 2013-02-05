@@ -248,12 +248,18 @@
       });
     },
     errors: function(vals) {
-      var field, msg, name;
+      var field, msg, name, submit_btn;
       if (this._errors == null) this._errors = {};
       if (vals) {
         this._errors = _.extend(this._errors, vals);
         for (name in vals) {
           msg = vals[name];
+          if (name === '__all__') {
+            submit_btn = this.$("input[type=submit]");
+            if (submit_btn.length && !submit_btn.parent().find('small.error').length) {
+              submit_btn.before("<small class='error'>" + msg + "</small>");
+            }
+          }
           field = this.$(".field-container[for=" + name + "]");
           field.find("#id_" + name).addClass('error');
           field.find("label").addClass('error');

@@ -241,6 +241,10 @@ FormView = Backbone.View.extend
     if vals
       @_errors = _.extend(@_errors, vals)
       for name, msg of vals
+        if name is '__all__'
+          submit_btn = @$("input[type=submit]")
+          if submit_btn.length and not submit_btn.parent().find('small.error').length
+            submit_btn.before "<small class='error'>#{msg}</small>"
         field = @$(".field-container[for=#{name}]")
         field.find("#id_#{name}").addClass('error')
         field.find("label").addClass 'error'
