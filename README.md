@@ -16,9 +16,8 @@ FormView = ReForm.Form.extend
         {name: 'title', widget: ReForm.commonWidgets.TextWidget, label: 'Todo:'}
         {name: 'desc', widget: ReForm.commonWidgets.TextAreaWidget, label: 'Description:'}
     ]
-    initialize: () ->
-        ReForm.Form.prototype.initialize.apply this, @options
-        @bind 'success', @onSuccess
+    events:
+        'success': 'onSuccess'
 
     onSuccess: (data) ->
         console.dir data

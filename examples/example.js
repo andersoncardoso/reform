@@ -17,7 +17,7 @@
       {
         name: 'title',
         widget: ReForm.commonWidgets.TextWidget,
-        label: 'Todo:'
+        label: 'Title:'
       }, {
         name: 'passwd',
         widget: ReForm.commonWidgets.PasswordWidget,
@@ -58,24 +58,24 @@
         label: 'dont you dare clicking on me:'
       }
     ],
-    initialize: function() {
-      ReForm.Form.prototype.initialize.apply(this, this.options);
-      this.bind('success', this.onSuccess);
-      return this.bind('error', this.onError);
+    events: {
+      'success': 'onSuccess',
+      'error': 'onError'
     },
     onSuccess: function(data) {
-      console.log('ON SUCCESS');
+      console.log('ON SUCCESS CALLED!');
       return console.dir(data);
     },
     onError: function(data) {
-      console.log('ON ERROR');
+      console.log('ON ERROR CALLED!');
       return console.dir(data);
     }
   });
 
   DummyModel = Backbone.Model.extend({
     save: function(data, opts) {
-      return console.log('DummyModel save!');
+      console.log('DummyModel save!');
+      return {};
     }
   });
 
@@ -84,7 +84,9 @@
     myForm = new FormView({
       formId: 'some_id',
       model: new DummyModel({
-        a: 'bb'
+        title: 'Initial Data',
+        'yes-no': true,
+        dropdown: 'bar'
       })
     });
     $('#my-form-wrapper').html(myForm.render().el);

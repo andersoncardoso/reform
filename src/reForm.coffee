@@ -123,14 +123,16 @@ FormView = Backbone.View.extend
   template: formTemplate
 
   initialize: () ->
-    @_template = _.template @template
     _.bindAll this
-    if @options?.model
-      @model = @options.model
+    @_template = _.template @template
+    @model = @options.model if@options?.model
     @patch = @options?.patch ? false
-    @on 'submit', @save
     @renderedFields = []
     @instances = {}
+
+    @on 'submit', @save
+    @on(event, this[cb_name]) for event, cb_name of @events if @events?
+
     @initializeFields()
 
   render: () ->
@@ -193,7 +195,7 @@ FormView = Backbone.View.extend
       # add rendered widget to field template
       # create a div to avoid detached elements
       container = $('<div>').html _fieldTemplate args
-      renderedField = container.children().detach();
+      renderedField = container.children().detach()
       renderedField.find('.widget-container').append widget.render().el
 
       # prepend renderedField on form

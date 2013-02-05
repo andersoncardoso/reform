@@ -1,5 +1,7 @@
-- everything is broken fix imports and etc
 - tests
-- proper examples
-- organize docs
+- more docs
+- more examples
+- widgets
+- improve field/form template choices
+- clean code
 
