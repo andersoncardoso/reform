@@ -1,5 +1,7 @@
 (function() {
-  var CheckboxWidget, DropdownWidget, FormView, PasswordWidget, TextAreaWidget, TextWidget, Widget, checkboxTemplate, dropdownTemplate, fieldTemplate, formTemplate, textTemplate, textareaTemplate;
+  var CheckboxWidget, DropdownWidget, FormView, HiddenWidget, PasswordWidget, TextAreaWidget, TextWidget, Widget, checkboxTemplate, dropdownTemplate, fieldTemplate, formTemplate, textTemplate, textareaTemplate,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   formTemplate = "<form action=\"\" method=\"post\" id=\"<%= formId %>\" >\n    <div>\n        <input type=\"submit\" name=\"submit\" value=\"<%=submit_label%>\" />\n    </div>\n</form>";
 
@@ -13,58 +15,132 @@
 
   dropdownTemplate = "<select name=\"<%=name%>\" id=\"id_<%=name%>\" <%=attrs%>>\n  <%_.each(choices, function (choice) {%>\n    <option value=\"<%=choice.value%>\" <%=choice.attrs%>><%=choice.title%></option>\n  <% }); %>\n</select>";
 
-  Widget = Backbone.View.extend({
-    initialize: function() {
+  Widget = (function(_super) {
+
+    __extends(Widget, _super);
+
+    function Widget() {
+      Widget.__super__.constructor.apply(this, arguments);
+    }
+
+    Widget.prototype.initialize = function() {
       var _base;
       _.bindAll(this);
       this._template = _.template(this.template);
       if ((_base = this.options).attrs == null) _base.attrs = '';
       return this.name = this.options.name;
-    },
-    render: function() {
+    };
+
+    Widget.prototype.render = function() {
       this.$el.html(this._template(this.options));
       if (typeof this.behavior === "function") this.behavior();
       return this;
-    },
-    getInputElement: function() {
+    };
+
+    Widget.prototype.getInputElement = function() {
       return this.$("input[name=" + this.name + "]");
-    },
-    set: function(value) {
+    };
+
+    Widget.prototype.set = function(value) {
       return this.getInputElement().val(value);
-    },
-    get: function() {
+    };
+
+    Widget.prototype.get = function() {
       return this.getInputElement().val();
-    }
-  });
+    };
 
-  TextWidget = Widget.extend({
-    template: textTemplate,
-    initialize: function() {
+    return Widget;
+
+  })(Backbone.View);
+
+  TextWidget = (function(_super) {
+
+    __extends(TextWidget, _super);
+
+    function TextWidget() {
+      TextWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    TextWidget.prototype.template = textTemplate;
+
+    TextWidget.prototype.initialize = function() {
       this.options.type = 'text';
-      return Widget.prototype.initialize.apply(this, arguments);
-    }
-  });
+      return TextWidget.__super__.initialize.apply(this, arguments);
+    };
 
-  PasswordWidget = Widget.extend({
-    template: textTemplate,
-    initialize: function() {
+    return TextWidget;
+
+  })(Widget);
+
+  HiddenWidget = (function(_super) {
+
+    __extends(HiddenWidget, _super);
+
+    function HiddenWidget() {
+      HiddenWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    HiddenWidget.prototype.template = textTemplate;
+
+    HiddenWidget.prototype.initialize = function() {
+      this.options.type = 'hidden';
+      return HiddenWidget.__super__.initialize.apply(this, arguments);
+    };
+
+    return HiddenWidget;
+
+  })(Widget);
+
+  PasswordWidget = (function(_super) {
+
+    __extends(PasswordWidget, _super);
+
+    function PasswordWidget() {
+      PasswordWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    PasswordWidget.prototype.template = textTemplate;
+
+    PasswordWidget.prototype.initialize = function() {
       this.options.type = 'password';
       this.options.value = '';
       this.options.attrs = 'autocomplete="off"';
       return Widget.prototype.initialize.apply(this, arguments);
-    }
-  });
+    };
 
-  TextAreaWidget = Widget.extend({
-    template: textareaTemplate,
-    getInputElement: function() {
+    return PasswordWidget;
+
+  })(Widget);
+
+  TextAreaWidget = (function(_super) {
+
+    __extends(TextAreaWidget, _super);
+
+    function TextAreaWidget() {
+      TextAreaWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    TextAreaWidget.prototype.template = textareaTemplate;
+
+    TextAreaWidget.prototype.getInputElement = function() {
       return this.$('textarea');
-    }
-  });
+    };
 
-  CheckboxWidget = Widget.extend({
-    template: checkboxTemplate,
-    render: function() {
+    return TextAreaWidget;
+
+  })(Widget);
+
+  CheckboxWidget = (function(_super) {
+
+    __extends(CheckboxWidget, _super);
+
+    function CheckboxWidget() {
+      CheckboxWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    CheckboxWidget.prototype.template = checkboxTemplate;
+
+    CheckboxWidget.prototype.render = function() {
       var args, idx, option, renderedChoice, _ref;
       this.$el.html('');
       _ref = this.options.choices;
@@ -79,15 +155,17 @@
         this.$el.append(renderedChoice);
       }
       return this;
-    },
-    set: function(value) {
+    };
+
+    CheckboxWidget.prototype.set = function(value) {
       if (value) {
         return this.$("input[value=" + value + "]").attr('checked', true);
       } else {
         return this.$(":checked").attr('checked', false);
       }
-    },
-    get: function() {
+    };
+
+    CheckboxWidget.prototype.get = function() {
       var checked;
       checked = this.$(":checked");
       if (checked.length) {
@@ -95,24 +173,47 @@
       } else {
         return '';
       }
-    }
-  });
+    };
 
-  DropdownWidget = Widget.extend({
-    template: dropdownTemplate,
-    initialize: function() {
+    return CheckboxWidget;
+
+  })(Widget);
+
+  DropdownWidget = (function(_super) {
+
+    __extends(DropdownWidget, _super);
+
+    function DropdownWidget() {
+      DropdownWidget.__super__.constructor.apply(this, arguments);
+    }
+
+    DropdownWidget.prototype.template = dropdownTemplate;
+
+    DropdownWidget.prototype.initialize = function() {
       var _base;
       if ((_base = this.options).choices == null) _base.choices = [];
-      return Widget.prototype.initialize.apply(this, arguments);
-    },
-    getInputElement: function() {
-      return this.$("select[name=" + this.options.name + "]");
-    }
-  });
+      return DropdownWidget.__super__.initialize.apply(this, arguments);
+    };
 
-  FormView = Backbone.View.extend({
-    template: formTemplate,
-    initialize: function() {
+    DropdownWidget.prototype.getInputElement = function() {
+      return this.$("select[name=" + this.options.name + "]");
+    };
+
+    return DropdownWidget;
+
+  })(Widget);
+
+  FormView = (function(_super) {
+
+    __extends(FormView, _super);
+
+    function FormView() {
+      FormView.__super__.constructor.apply(this, arguments);
+    }
+
+    FormView.prototype.template = formTemplate;
+
+    FormView.prototype.initialize = function() {
       var cb_name, event, _ref, _ref2, _ref3, _ref4;
       _.bindAll(this);
       this._template = _.template(this.template);
@@ -131,8 +232,9 @@
         }
       }
       return this.initializeFields();
-    },
-    render: function() {
+    };
+
+    FormView.prototype.render = function() {
       var id, renderedField, renderedFormTemplate, submit_label, _i, _j, _len, _len2, _ref, _ref2, _ref3, _ref4,
         _this = this;
       _ref = this.renderedFields;
@@ -158,13 +260,15 @@
       });
       if (this.model) this.set(this.model.toJSON());
       return this;
-    },
-    remove: function() {
-      Backbone.View.prototype.initialize.apply(this, arguments);
+    };
+
+    FormView.prototype.remove = function() {
+      FormView.__super__.remove.apply(this, arguments);
       this.clearInstances();
       return this.clearRenderedFields();
-    },
-    clearInstances: function() {
+    };
+
+    FormView.prototype.clearInstances = function() {
       var instance, name, _ref, _results;
       _ref = this.instances;
       _results = [];
@@ -174,8 +278,9 @@
         _results.push(this.instances[name] = null);
       }
       return _results;
-    },
-    clearRenderedFields: function() {
+    };
+
+    FormView.prototype.clearRenderedFields = function() {
       var renderedField, _i, _len, _ref;
       _ref = this.renderedFields;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -183,8 +288,9 @@
         renderedField.remove();
       }
       return this.renderedFields.length = 0;
-    },
-    initializeFields: function() {
+    };
+
+    FormView.prototype.initializeFields = function() {
       var args, container, field, renderedField, widget, _fieldTemplate, _i, _len, _ref, _results;
       _ref = this.fields.slice(0).reverse();
       _results = [];
@@ -213,14 +319,17 @@
         }
       }
       return _results;
-    },
-    disableSubmit: function() {
+    };
+
+    FormView.prototype.disableSubmit = function() {
       return this.$('input[type=submit]').attr('disabled', 'disabled');
-    },
-    enableSubmit: function() {
+    };
+
+    FormView.prototype.enableSubmit = function() {
       return this.$('input[type=submit]').removeAttr('disabled');
-    },
-    save: function() {
+    };
+
+    FormView.prototype.save = function() {
       var _this = this;
       this.disableSubmit();
       return this.model.save(this.get(), {
@@ -246,8 +355,9 @@
           return _this.trigger('error', resp);
         }
       });
-    },
-    errors: function(vals) {
+    };
+
+    FormView.prototype.errors = function(vals) {
       var field, msg, name, submit_btn;
       if (this._errors == null) this._errors = {};
       if (vals) {
@@ -270,12 +380,14 @@
       } else {
         return this._errors;
       }
-    },
-    cleanErrors: function() {
+    };
+
+    FormView.prototype.cleanErrors = function() {
       this.$('small.error').remove();
       return this.$('.error').removeClass('error');
-    },
-    get: function(fieldName) {
+    };
+
+    FormView.prototype.get = function(fieldName) {
       var field, vals, _i, _len, _ref;
       if (fieldName == null) fieldName = '__all__';
       if (fieldName === '__all__') {
@@ -292,8 +404,9 @@
         });
         return this.instances[field.name].get();
       }
-    },
-    set: function(vals) {
+    };
+
+    FormView.prototype.set = function(vals) {
       var field, key, value, _ref, _results;
       if (vals == null) vals = {};
       _results = [];
@@ -305,8 +418,11 @@
         _results.push((_ref = this.instances[field != null ? field.name : void 0]) != null ? typeof _ref.set === "function" ? _ref.set(value) : void 0 : void 0);
       }
       return _results;
-    }
-  });
+    };
+
+    return FormView;
+
+  })(Backbone.View);
 
   window.ReForm = {
     Form: FormView,
@@ -314,6 +430,7 @@
     commonWidgets: {
       TextWidget: TextWidget,
       PasswordWidget: PasswordWidget,
+      HiddenWidget: HiddenWidget,
       TextAreaWidget: TextAreaWidget,
       CheckboxWidget: CheckboxWidget,
       DropdownWidget: DropdownWidget

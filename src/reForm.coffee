@@ -40,7 +40,7 @@ dropdownTemplate = """
 </select>
 """
 
-Widget = Backbone.View.extend
+class Widget extends Backbone.View
   initialize: () ->
     _.bindAll this
     @_template = _.template @template
@@ -61,13 +61,20 @@ Widget = Backbone.View.extend
   get: () ->
     @getInputElement().val()
 
-TextWidget = Widget.extend
+class TextWidget extends Widget
   template: textTemplate
   initialize: () ->
     @options.type = 'text'
-    Widget.prototype.initialize.apply this, arguments
+    super
+    # Widget.prototype.initialize.apply this, arguments
 
-PasswordWidget = Widget.extend
+class HiddenWidget extends Widget
+  template: textTemplate
+  initialize: ->
+    @options.type = 'hidden'
+    super
+
+class PasswordWidget extends Widget
   template: textTemplate
   initialize: ->
     @options.type = 'password'
@@ -75,13 +82,13 @@ PasswordWidget = Widget.extend
     @options.attrs = 'autocomplete="off"'
     Widget.prototype.initialize.apply this, arguments
 
-TextAreaWidget = Widget.extend
+class TextAreaWidget extends Widget
   template: textareaTemplate
 
   getInputElement: () ->
     @$('textarea')
 
-CheckboxWidget = Widget.extend
+class CheckboxWidget extends Widget
   template: checkboxTemplate
   render: ->
     @$el.html ''
@@ -108,18 +115,19 @@ CheckboxWidget = Widget.extend
     else
       return ''
 
-DropdownWidget = Widget.extend
+class DropdownWidget extends Widget
   template: dropdownTemplate
 
   initialize: () ->
     @options.choices ?= []
-    Widget.prototype.initialize.apply this, arguments
+    super
+    # Widget.prototype.initialize.apply this, arguments
 
   getInputElement: ->
     @$("select[name=#{@options.name}]")
 
 
-FormView = Backbone.View.extend
+class FormView extends Backbone.View
   template: formTemplate
 
   initialize: () ->
@@ -158,7 +166,8 @@ FormView = Backbone.View.extend
     this
 
   remove: ->
-    Backbone.View.prototype.initialize.apply this, arguments
+    super
+    # Backbone.View.prototype.initialize.apply this, arguments
     @clearInstances()
     @clearRenderedFields()
 
@@ -282,6 +291,7 @@ window.ReForm =
   commonWidgets:
     TextWidget:     TextWidget
     PasswordWidget: PasswordWidget
+    HiddenWidget:   HiddenWidget
     TextAreaWidget: TextAreaWidget
     CheckboxWidget: CheckboxWidget
     DropdownWidget: DropdownWidget
