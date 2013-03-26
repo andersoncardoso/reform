@@ -330,31 +330,35 @@
     };
 
     FormView.prototype.save = function() {
-      var _this = this;
-      this.disableSubmit();
-      return this.model.save(this.get(), {
-        wait: true,
-        patch: this.patch,
-        success: function(model, resp) {
-          _this.cleanErrors();
-          _this.enableSubmit();
-          if (resp.redirect) {
-            if (window.location.pathname === resp.redirect) {
-              window.location.reload();
-            } else {
-              window.location = resp.redirect;
+      var is_valid,
+        _this = this;
+      is_valid = this.events.hasOwnProperty('validation') ? this[this.events.validation]() : true;
+      if (is_valid) {
+        this.disableSubmit();
+        return this.model.save(this.get(), {
+          wait: true,
+          patch: this.patch,
+          success: function(model, resp) {
+            _this.cleanErrors();
+            _this.enableSubmit();
+            if (resp.redirect) {
+              if (window.location.pathname === resp.redirect) {
+                window.location.reload();
+              } else {
+                window.location = resp.redirect;
+              }
             }
+            return _this.trigger('success', resp);
+          },
+          error: function(model, resp) {
+            _this.enableSubmit();
+            resp = JSON.parse(resp.responseText);
+            _this.cleanErrors();
+            _this.errors(resp.errors || {});
+            return _this.trigger('error', resp);
           }
-          return _this.trigger('success', resp);
-        },
-        error: function(model, resp) {
-          _this.enableSubmit();
-          resp = JSON.parse(resp.responseText);
-          _this.cleanErrors();
-          _this.errors(resp.errors || {});
-          return _this.trigger('error', resp);
-        }
-      });
+        });
+      }
     };
 
     FormView.prototype.errors = function(vals) {

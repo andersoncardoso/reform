@@ -224,26 +224,30 @@ class FormView extends Backbone.View
     @$('input[type=submit]').removeAttr 'disabled'
 
   save: () ->
-    @disableSubmit()
-    @model.save @get(),
-      wait: true
-      patch: @patch
-      success: (model, resp) =>
-        @cleanErrors()
-        @enableSubmit()
-        if resp.redirect
-          if window.location.pathname is resp.redirect
-            window.location.reload()
-          else
-            window.location = resp.redirect
-        @trigger 'success', resp
+    is_valid = if @events.hasOwnProperty('validation') then \
+                    this[@events.validation]() else yes
 
-      error: (model, resp) =>
-        @enableSubmit()
-        resp = JSON.parse(resp.responseText)
-        @cleanErrors()
-        @errors(resp.errors or {})
-        @trigger 'error', resp
+    if is_valid
+      @disableSubmit()
+      @model.save @get(),
+        wait: true
+        patch: @patch
+        success: (model, resp) =>
+          @cleanErrors()
+          @enableSubmit()
+          if resp.redirect
+            if window.location.pathname is resp.redirect
+              window.location.reload()
+            else
+              window.location = resp.redirect
+          @trigger 'success', resp
+
+        error: (model, resp) =>
+          @enableSubmit()
+          resp = JSON.parse(resp.responseText)
+          @cleanErrors()
+          @errors(resp.errors or {})
+          @trigger 'error', resp
 
   errors: (vals) ->
     @_errors ?= {}

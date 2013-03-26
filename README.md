@@ -18,9 +18,18 @@ FormView = ReForm.Form.extend
     ]
     events:
         'success': 'onSuccess'
+        'validation': 'onValidation'
 
     onSuccess: (data) ->
         console.dir data
+
+    onValidation: ->
+        # do some client-side validation ()
+        if has_error
+          @errors {key: 'error description'}
+          return false
+        else
+          return true
 
 $ () ->
     form = new FormView
