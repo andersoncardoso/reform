@@ -267,7 +267,6 @@ class FormView extends Backbone.View
     @_errors = {}
     if vals
       @_errors = _.extend(@_errors, vals)
-      console.log 'errors => ',   vals
       for name, msg of vals
         if name is '__all__'
           submit_btn = @$("input[type=submit]")

@@ -383,7 +383,6 @@
       this._errors = {};
       if (vals) {
         this._errors = _.extend(this._errors, vals);
-        console.log('errors => ', vals);
         for (name in vals) {
           msg = vals[name];
           if (name === '__all__') {
