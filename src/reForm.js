@@ -49,6 +49,10 @@
       return this.getInputElement().val();
     };
 
+    Widget.prototype.validate = function() {
+      return true;
+    };
+
     return Widget;
 
   })(Backbone.View);
@@ -105,7 +109,7 @@
       this.options.type = 'password';
       this.options.value = '';
       this.options.attrs = 'autocomplete="off"';
-      return Widget.prototype.initialize.apply(this, arguments);
+      return PasswordWidget.__super__.initialize.apply(this, arguments);
     };
 
     return PasswordWidget;
@@ -330,9 +334,22 @@
     };
 
     FormView.prototype.save = function() {
-      var is_valid,
+      var is_valid, name, nm, validate, widget, _errs, _ref,
         _this = this;
+      this.cleanErrors();
       is_valid = this.events.hasOwnProperty('validation') ? this[this.events.validation]() : true;
+      _errs = {};
+      _ref = this.instances;
+      for (name in _ref) {
+        widget = _ref[name];
+        validate = widget.validate();
+        if (!validate) {
+          is_valid = false;
+          nm = widget.errorTargetName || name;
+          _errs[nm] = widget.error;
+        }
+      }
+      if (!_.isEmpty(_errs)) this.errors(_errs);
       if (is_valid) {
         this.disableSubmit();
         return this.model.save(this.get(), {
@@ -363,9 +380,10 @@
 
     FormView.prototype.errors = function(vals) {
       var field, msg, name, submit_btn;
-      if (this._errors == null) this._errors = {};
+      this._errors = {};
       if (vals) {
         this._errors = _.extend(this._errors, vals);
+        console.log('errors => ', vals);
         for (name in vals) {
           msg = vals[name];
           if (name === '__all__') {
@@ -387,6 +405,14 @@
     };
 
     FormView.prototype.cleanErrors = function() {
+      var name, widget, _ref;
+      this.errors({});
+      _ref = this.instances;
+      for (name in _ref) {
+        widget = _ref[name];
+        delete widget.error;
+        delete widget.errorTargetName;
+      }
       this.$('small.error').remove();
       return this.$('.error').removeClass('error');
     };

@@ -41,13 +41,13 @@ dropdownTemplate = """
 """
 
 class Widget extends Backbone.View
-  initialize: () ->
+  initialize: ->
     _.bindAll this
     @_template = _.template @template
     @options.attrs ?= ''
     @name = @options.name
 
-  render: ()->
+  render: ->
     @$el.html(@_template @options)
     @behavior?()
     this
@@ -58,15 +58,17 @@ class Widget extends Backbone.View
   set: (value) ->
     @getInputElement().val(value)
 
-  get: () ->
+  get: ->
     @getInputElement().val()
+
+  validate: ->
+    true
 
 class TextWidget extends Widget
   template: textTemplate
   initialize: () ->
     @options.type = 'text'
     super
-    # Widget.prototype.initialize.apply this, arguments
 
 class HiddenWidget extends Widget
   template: textTemplate
@@ -80,7 +82,7 @@ class PasswordWidget extends Widget
     @options.type = 'password'
     @options.value = ''
     @options.attrs = 'autocomplete="off"'
-    Widget.prototype.initialize.apply this, arguments
+    super
 
 class TextAreaWidget extends Widget
   template: textareaTemplate
@@ -224,8 +226,20 @@ class FormView extends Backbone.View
     @$('input[type=submit]').removeAttr 'disabled'
 
   save: () ->
+    @cleanErrors()
     is_valid = if @events.hasOwnProperty('validation') then \
                     this[@events.validation]() else yes
+
+    _errs = {}
+    for name, widget of @instances
+      validate = widget.validate()
+      if not validate
+        is_valid = no
+        nm = widget.errorTargetName or name
+        _errs[nm] = widget.error
+
+    if not _.isEmpty(_errs)
+      @errors _errs
 
     if is_valid
       @disableSubmit()
@@ -250,9 +264,10 @@ class FormView extends Backbone.View
           @trigger 'error', resp
 
   errors: (vals) ->
-    @_errors ?= {}
+    @_errors = {}
     if vals
       @_errors = _.extend(@_errors, vals)
+      console.log 'errors => ',   vals
       for name, msg of vals
         if name is '__all__'
           submit_btn = @$("input[type=submit]")
@@ -268,6 +283,11 @@ class FormView extends Backbone.View
       return @_errors
 
   cleanErrors: () ->
+    @errors {}
+    for name, widget of @instances
+      delete widget.error
+      delete widget.errorTargetName
+
     @$('small.error').remove()
     @$('.error').removeClass 'error'
 
