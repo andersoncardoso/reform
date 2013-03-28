@@ -262,7 +262,9 @@
         evt.preventDefault();
         return _this.trigger('submit');
       });
-      if (this.model) this.set(this.model.toJSON());
+      if (this.model && !_.isEmpty(this.model.toJSON())) {
+        this.set(this.model.toJSON());
+      }
       return this;
     };
 
@@ -315,12 +317,7 @@
         renderedField = container.children().detach();
         renderedField.find('.widget-container').append(widget.render().el);
         this.$('form').prepend(renderedField);
-        this.renderedFields.push(renderedField);
-        if (this.model) {
-          _results.push(this.set(this.model.toJSON()));
-        } else {
-          _results.push(void 0);
-        }
+        _results.push(this.renderedFields.push(renderedField));
       }
       return _results;
     };
@@ -436,15 +433,12 @@
     };
 
     FormView.prototype.set = function(vals) {
-      var field, key, value, _ref, _results;
+      var key, value, _ref, _results;
       if (vals == null) vals = {};
       _results = [];
       for (key in vals) {
         value = vals[key];
-        field = _.find(this.fields, function(f) {
-          return f.name === key;
-        });
-        _results.push((_ref = this.instances[field != null ? field.name : void 0]) != null ? typeof _ref.set === "function" ? _ref.set(value) : void 0 : void 0);
+        _results.push((_ref = this.instances[key]) != null ? typeof _ref.set === "function" ? _ref.set(value) : void 0 : void 0);
       }
       return _results;
     };

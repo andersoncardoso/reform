@@ -146,6 +146,7 @@ class FormView extends Backbone.View
     @initializeFields()
 
   render: () ->
+
     for renderedField in @renderedFields
       renderedField.detach()
 
@@ -163,7 +164,7 @@ class FormView extends Backbone.View
       evt.preventDefault()
       @trigger 'submit'
 
-    if @model
+    if @model and not _.isEmpty(@model.toJSON())
       @set @model.toJSON()
     this
 
@@ -215,9 +216,9 @@ class FormView extends Backbone.View
       # save the field element reference
       @renderedFields.push renderedField
 
-      #initial values for prepolated models
-      if @model
-        @set @model.toJSON()
+      # #initial values for prepolated models
+      # if @model
+      #   @set @model.toJSON()
 
   disableSubmit: ->
     @$('input[type=submit]').attr 'disabled', 'disabled'
@@ -303,8 +304,8 @@ class FormView extends Backbone.View
 
   set: (vals={})->
     for key, value of vals
-      field = _.find(@fields, (f)-> f.name is key)
-      @instances[field?.name]?.set?(value)
+      # field = _.find(@fields, (f)-> f.name is key)
+      @instances[key]?.set?(value)
 
 
 
