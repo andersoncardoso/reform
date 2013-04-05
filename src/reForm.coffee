@@ -141,7 +141,9 @@ class FormView extends Backbone.View
     @instances = {}
 
     @on 'submit', @save
-    @on(event, this[cb_name]) for event, cb_name of @events if @events?
+    if not @events?
+      @events = {}
+    @on(event, this[cb_name]) for event, cb_name of @events
 
     @initializeFields()
 
@@ -157,12 +159,13 @@ class FormView extends Backbone.View
 
     for renderedField in @renderedFields
       # prepend renderedField on form
-      @$('form').prepend renderedField
+      @$el.find('form').prepend renderedField
 
     # prevent for from being submited
-    @$('form').submit (evt) =>
+    @$el.find('form').submit (evt) =>
       evt.preventDefault()
       @trigger 'submit'
+      false
 
     if @model and not _.isEmpty(@model.toJSON())
       @set @model.toJSON()

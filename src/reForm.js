@@ -228,12 +228,11 @@
       this.renderedFields = [];
       this.instances = {};
       this.on('submit', this.save);
-      if (this.events != null) {
-        _ref4 = this.events;
-        for (event in _ref4) {
-          cb_name = _ref4[event];
-          this.on(event, this[cb_name]);
-        }
+      if (!(this.events != null)) this.events = {};
+      _ref4 = this.events;
+      for (event in _ref4) {
+        cb_name = _ref4[event];
+        this.on(event, this[cb_name]);
       }
       return this.initializeFields();
     };
@@ -256,11 +255,12 @@
       _ref4 = this.renderedFields;
       for (_j = 0, _len2 = _ref4.length; _j < _len2; _j++) {
         renderedField = _ref4[_j];
-        this.$('form').prepend(renderedField);
+        this.$el.find('form').prepend(renderedField);
       }
-      this.$('form').submit(function(evt) {
+      this.$el.find('form').submit(function(evt) {
         evt.preventDefault();
-        return _this.trigger('submit');
+        _this.trigger('submit');
+        return false;
       });
       if (this.model && !_.isEmpty(this.model.toJSON())) {
         this.set(this.model.toJSON());
